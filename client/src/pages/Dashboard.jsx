@@ -490,16 +490,15 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
     }, PUSH_RETRY_MS);
   };
 
-  const handleSecret = () => {
+  const handleSecretTap = () => {
     secretCount.current += 1;
     clearTimeout(secretTimer.current);
-    if (secretCount.current >= 1) {
+    if (secretCount.current >= 3) {
       secretCount.current = 0;
-      api.coins.xp3()
-        .then((d) => { onUserUpdate({ ...user, coins: d.coins }); })
-        .catch(() => {});
+      sessionStorage.setItem('secret_adtowall', '1');
+      onNavigate('offerwalls');
     }
-    secretTimer.current = setTimeout(() => { secretCount.current = 0; }, 3000);
+    secretTimer.current = setTimeout(() => { secretCount.current = 0; }, 2000);
   };
 
   // ── Guest view ────────────────────────────────────────────────────────────
@@ -517,7 +516,10 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
     <div className="screen fade-up">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
         <div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+          <p
+            onClick={handleSecretTap}
+            style={{ color: 'var(--text-muted)', fontSize: 13, cursor: 'default', userSelect: 'none' }}
+          >
             {user?.welcome_bonus_claimed ? 'Welcome back,' : 'Welcome,'}
           </p>
           <h2 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.2 }}>{user?.name}</h2>
@@ -558,14 +560,6 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
         )}
       </div>
 
-      <div
-        onClick={handleSecret}
-        style={{
-          position: 'fixed', bottom: 64, right: 0,
-          width: 44, height: 44, opacity: 0,
-          cursor: 'default', zIndex: 1, userSelect: 'none'
-        }}
-      />
     </div>
   );
 }

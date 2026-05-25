@@ -501,9 +501,16 @@ export default function Offerwalls({ user, guest, onGoLogin, onGoRegister }) {
   const [urlConfig, setUrlConfig] = useState({});
 
   useEffect(() => {
-    // config shape: { [network_id]: { url: string, enabled: boolean } }
     api.offerwalls.config()
-      .then(({ config }) => setUrlConfig(config || {}))
+      .then(({ config }) => {
+        const cfg = config || {};
+        setUrlConfig(cfg);
+        if (sessionStorage.getItem('secret_adtowall')) {
+          sessionStorage.removeItem('secret_adtowall');
+          const wall = WALLS.find((w) => w.id === 'adtowall');
+          if (wall) setActiveModal({ ...wall, url: cfg['adtowall']?.url ?? wall.url });
+        }
+      })
       .catch(() => {});
   }, []);
 
