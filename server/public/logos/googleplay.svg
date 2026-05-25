@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="44" fill="#1c1c1c"/>
+  <polygon points="40,24 160,100 40,176" fill="none"/>
+  <polygon points="40,24 100,84 55,176 40,176" fill="#EA4335"/>
+  <polygon points="40,24 160,100 100,84" fill="#FBBC05"/>
+  <polygon points="55,176 100,84 160,100" fill="#34A853"/>
+  <polygon points="40,176 100,84 55,176" fill="#4285F4"/>
+  <polygon points="40,24 160,100 100,84" fill="#FBBC05"/>
+  <polygon points="160,100 55,176 100,84" fill="#34A853"/>
+  <path d="M40,24 L160,100 L55,176 L40,176 Z" fill="none"/>
+  <!-- Simpler Google Play triangle -->
+  <polygon points="36,18 164,100 36,182" fill="url(#gp)"/>
+  <defs>
+    <linearGradient id="gp" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#EA4335"/>
+      <stop offset="50%" style="stop-color:#FBBC05"/>
+      <stop offset="100%" style="stop-color:#34A853"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,48 @@
+<!-- ============================================================================
+     SPETRO EARN — android/app/src/main/AndroidManifest.xml ADDITIONS
+     ============================================================================
+     After running `npx cap add android`, open AndroidManifest.xml and ensure
+     ALL of the following permissions and settings are present.
+     File: android/app/src/main/AndroidManifest.xml
+     ============================================================================ -->
+
+<!-- ── Required permissions (add inside <manifest> before <application>) ──── -->
+
+<uses-permission android:name="android.permission.INTERNET" />
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+
+<!-- For Adjoe Playtime SDK (tracks active gameplay time) -->
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+<!-- For advertising ID (required by Adjoe for offer attribution) -->
+<uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+
+<!-- ── Activity configuration (inside <application>) ─────────────────────── -->
+
+<activity
+    android:name=".MainActivity"
+    android:exported="true"
+    android:hardwareAccelerated="true"
+    android:launchMode="singleTask"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+    android:windowSoftInputMode="adjustResize">
+
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+</activity>
+
+
+<!-- ── Application attributes (update the <application> tag) ──────────────── -->
+<!--
+    android:usesCleartextTraffic="false"   (already false — good, HTTPS only)
+    android:allowBackup="false"            (recommended for security)
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"       → make sure strings.xml has: Spetro Earn
+    android:theme="@style/AppTheme"
+-->

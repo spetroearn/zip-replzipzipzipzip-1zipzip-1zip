@@ -1,0 +1,38 @@
+Please perform a comprehensive visual and functional overhaul across the entire web application. Stop any other tasks and execute these specific changes perfectly, ensuring a highly modern, premium, and professional UI/UX (similar to Freecash). Keep all interface text and logs strictly in English.
+
+1. Master Design, Color Palette & Animations:
+   - Change the theme globally from purple to a sleek, modern Dark Minimalist palette: Deep Dark/Black backgrounds paired with sharp, vibrant Cyan (Sky Blue / Cyan #0ea5e9) accents for buttons, borders, and active elements.
+   - Absolutely REMOVE all default emojis across the entire website. Replace them with clean, modern SVG icons or actual UI graphics.
+   - Add very subtle, smooth CSS transition animations on buttons, links, and card hovers to make the site feel premium and fast.
+
+2. Home Dashboard Screen Updates:
+   - Change the text "Welcome back" to "Welcome" for first-time registrations to accurately reflect user status.
+   - Overhaul the "Your balance" display box to look professional, clean, and sleek.
+   - Add two prominent stacked buttons right below the balance container: The top button must redirect to the "Earn" (Offerwalls) screen, and the bottom button must redirect to the "Withdraw" screen.
+   - Re-engineer the "Daily Check-in" card into a horizontal row displaying 7 consecutive days next to each other, where users can clearly track their progress and claim 5 coins sequentially each day.
+   - Implement an immediate push notification permission prompt as soon as the user loads the home dashboard, preparing the server to alert them instantly upon successful offer credits.
+
+3. Earn Coins Screen Updates:
+   - Remodel the offerwall cards layout. The "adjoe" (Playtime) offerwall card must be highlighted prominently, taking double the grid space (the size of two standard cards) compared to other companies.
+   - Update the descriptions for each platform with precise industry descriptions:
+     * adjoe: "Play games, level up, and earn coins automatically per minute."
+     * Revu: "Complete premium surveys, high-paying quiz tasks, and top offers."
+     * Offery & Ovnix: "Explore new apps, register accounts, and unlock fast rewards."
+   - Replace the bottom blue protection banner text with a helpful support message: "Need help with offers? Contact support with your Account ID for fast review."
+
+4. Withdraw Screen Updates:
+   - Completely remove all current payment methods (such as PayPal).
+   - Rebuild the dynamic store to offer exactly 4 withdrawal choices with their respective icons/logos:
+     1. Visa Cards (Real Visa credentials)
+     2. Binance / USDT (Crypto exchange)
+     3. Litecoin (LTC)
+     4. Google Play Gift Cards
+   - Update the form validation fields to match the chosen payout method dynamically (e.g., wallet address for crypto, email for gift cards) and link them safely to the server database.
+
+5. Profile Screen Updates:
+   - Display the secure 28-character unique server-side Account ID (UID) prominently inside a clean Cyan display card, complete with a functional "Copy ID" button.
+   - Implement an automatic random avatar generator so that each user gets assigned a unique placeholder profile picture instead of just a generic letter circle.
+   - Remove the bottom three profile metrics (Member Since, Welcome Bonus, Last Check-in) as they are unnecessary.
+   - Replace those deleted rows with two vital metrics pulled from the database: The user's Location/Country (based on server check) and their Account Status ("Active" or "Banned").
+
+Please review the complete workspace, apply these changes cleanly without losing backend functionalities, and inform me once the application is live and running under this new modern standard.
