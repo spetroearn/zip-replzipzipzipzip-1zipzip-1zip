@@ -363,10 +363,11 @@ function WallCard({ wall, vpnBlocked, userId, onOpenModal }) {
               alt={wall.name}
               onError={() => setImgError(true)}
               style={{
-                width: 64,
-                height: 48,
+                width: '100%',
+                height: '100%',
                 objectFit: 'contain',
-                display: 'block'
+                display: 'block',
+                padding: 4
               }}
             />
           ) : (

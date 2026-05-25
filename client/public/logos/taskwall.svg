@@ -1,20 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <linearGradient id="twGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#3b82f6"/>
-      <stop offset="100%" style="stop-color:#1d4ed8"/>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e40af"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
     </linearGradient>
   </defs>
-  <rect width="200" height="200" rx="44" fill="url(#twGrad)"/>
-  <!-- Task list lines -->
-  <rect x="72" y="60" width="80" height="12" rx="6" fill="white" opacity="0.25"/>
-  <rect x="72" y="82" width="64" height="12" rx="6" fill="white" opacity="0.25"/>
-  <rect x="72" y="104" width="72" height="12" rx="6" fill="white" opacity="0.25"/>
-  <!-- Checkmark circle -->
-  <circle cx="52" cy="66" r="10" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
-  <circle cx="52" cy="88" r="10" fill="none" stroke="white" stroke-width="3" opacity="0.5"/>
-  <circle cx="52" cy="110" r="10" fill="#22c55e"/>
-  <polyline points="45,110 50,116 60,103" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <!-- "TW" text -->
-  <text x="100" y="164" font-family="Arial Black, Arial" font-weight="900" font-size="38" fill="white" text-anchor="middle" letter-spacing="2" opacity="0.9">TASKS</text>
+  <rect width="200" height="200" rx="40" fill="url(#g)"/>
+  <!-- Clipboard / task icon -->
+  <!-- Clipboard body -->
+  <rect x="48" y="64" width="104" height="114" rx="10" fill="white" opacity="0.12"/>
+  <rect x="54" y="70" width="92" height="102" rx="8" fill="white" opacity="0.08"/>
+  <!-- Clipboard clip at top -->
+  <rect x="76" y="56" width="48" height="20" rx="8" fill="white" opacity="0.9"/>
+  <rect x="88" y="52" width="24" height="14" rx="6" fill="white" opacity="0.6"/>
+  <!-- Task lines -->
+  <rect x="64" y="96" width="72" height="8" rx="4" fill="white" opacity="0.7"/>
+  <rect x="64" y="114" width="60" height="8" rx="4" fill="white" opacity="0.5"/>
+  <rect x="64" y="132" width="68" height="8" rx="4" fill="white" opacity="0.5"/>
+  <!-- Green checkmark badge bottom-right -->
+  <circle cx="148" cy="156" r="22" fill="#22c55e"/>
+  <polyline points="138,156 145,164 158,146" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>
