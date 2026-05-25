@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="mg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10d98a"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="36" fill="#030f0a"/>
+  <rect x="44" y="44" width="112" height="112" rx="18" fill="url(#mg)" opacity="0.12"/>
+  <rect x="56" y="56" width="88" height="88" rx="14" fill="none" stroke="#10d98a" stroke-width="4"/>
+  <rect x="75" y="75" width="50" height="50" rx="8" fill="url(#mg)"/>
+  <rect x="44" y="76" width="14" height="12" rx="3" fill="#10d98a"/>
+  <rect x="44" y="112" width="14" height="12" rx="3" fill="#10d98a"/>
+  <rect x="142" y="76" width="14" height="12" rx="3" fill="#10d98a"/>
+  <rect x="142" y="112" width="14" height="12" rx="3" fill="#10d98a"/>
+  <rect x="76" y="44" width="12" height="14" rx="3" fill="#10d98a"/>
+  <rect x="112" y="44" width="12" height="14" rx="3" fill="#10d98a"/>
+  <rect x="76" y="142" width="12" height="14" rx="3" fill="#10d98a"/>
+  <rect x="112" y="142" width="12" height="14" rx="3" fill="#10d98a"/>
+  <text x="100" y="109" font-family="Arial Black, Arial" font-weight="900" font-size="22" fill="#fff" text-anchor="middle">M</text>
+</svg>

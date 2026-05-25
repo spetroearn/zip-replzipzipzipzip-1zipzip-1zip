@@ -135,7 +135,7 @@ router.patch('/users/:id/coins', requireAdmin, async (req, res) => {
   }
 });
 
-// Postback logs — transactions of type 'postback_offer', newest first
+// Postback logs — all offerwall callback transactions, newest first
 router.get('/postback-logs', requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(`
@@ -143,7 +143,7 @@ router.get('/postback-logs', requireAdmin, async (req, res) => {
              u.name, u.email, u.uid
       FROM transactions t
       JOIN users u ON t.user_id = u.id
-      WHERE t.type = 'postback_offer'
+      WHERE t.type LIKE '%_offer'
       ORDER BY t.created_at DESC
       LIMIT 500
     `);

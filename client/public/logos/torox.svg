@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b1a"/>
+      <stop offset="100%" style="stop-color:#e53900"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="36" fill="#0f0a05"/>
+  <circle cx="100" cy="80" r="44" fill="url(#tg)" opacity="0.15"/>
+  <polygon points="100,36 116,66 149,66 124,85 133,115 100,97 67,115 76,85 51,66 84,66" fill="url(#tg)"/>
+  <text x="100" y="155" font-family="Arial Black, Arial" font-weight="900" font-size="28" fill="#ff6b1a" text-anchor="middle" letter-spacing="3">TOROX</text>
+</svg>

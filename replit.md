@@ -50,6 +50,8 @@ client/
 | `REVU_SECRET` | Revu offerwall HMAC secret |
 | `OFFERY_SECRET` | Offery offerwall HMAC secret |
 | `OVNIX_SECRET` | Ovnix offerwall HMAC secret |
+| `TOROX_SECRET` | Torox offerwall HMAC secret |
+| `MYCHIPS_SECRET` | MyChips offerwall HMAC secret |
 
 ## Key Security Features
 

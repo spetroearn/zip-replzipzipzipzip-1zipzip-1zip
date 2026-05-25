@@ -79,6 +79,30 @@ const WALLS = [
     featured: false,
     logo: '/logos/taskwall.png',
     url: 'https://taskwall.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
+  },
+  {
+    id: 'torox',
+    name: 'Torox',
+    subtitle: 'Rewarded Offers',
+    description: 'Complete rewarded offers, app installs, and sign-ups for fast coin payouts.',
+    color: '#ff6b1a',
+    bg: 'linear-gradient(145deg, #170800, #260e00)',
+    borderColor: 'rgba(255,107,26,0.3)',
+    featured: false,
+    logo: '/logos/torox.svg',
+    url: 'https://torox.io/ifr/show/YOUR_APP_ID/{USER_ID}/YOUR_APP_TOKEN'
+  },
+  {
+    id: 'mychips',
+    name: 'MyChips',
+    subtitle: 'Chip Rewards',
+    description: 'Earn chips by completing surveys, offers, and daily tasks on MyChips.',
+    color: '#10d98a',
+    bg: 'linear-gradient(145deg, #021209, #041f10)',
+    borderColor: 'rgba(16,217,138,0.28)',
+    featured: false,
+    logo: '/logos/mychips.svg',
+    url: 'https://mychips.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
 

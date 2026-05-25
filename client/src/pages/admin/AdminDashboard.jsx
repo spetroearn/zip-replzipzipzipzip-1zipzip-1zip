@@ -9,14 +9,16 @@ const TX_LABELS = {
   adjoe_offer: 'adjoe Offer',
   revu_offer: 'Revu Offer', offery_offer: 'Offery Offer',
   ovnix_offer: 'Ovnix Offer', adtowall_offer: 'AdToWall Offer',
-  taskwall_offer: 'TaskWall Offer', admin_adjustment: 'Admin Adjustment',
+  taskwall_offer: 'TaskWall Offer', torox_offer: 'Torox Offer',
+  mychips_offer: 'MyChips Offer', admin_adjustment: 'Admin Adjustment',
 };
 const TX_COLORS = {
   welcome_bonus: '#f59e0b', daily_checkin: '#0ea5e9', withdrawal: '#ef4444',
   adjoy_offer: '#10b981', adjoe_offer: '#10b981',
   revu_offer: '#0ea5e9', offery_offer: '#10b981',
   ovnix_offer: '#f59e0b', adtowall_offer: '#8b5cf6',
-  taskwall_offer: '#ec4899', admin_adjustment: '#6b7280',
+  taskwall_offer: '#ec4899', torox_offer: '#ff6b1a',
+  mychips_offer: '#10d98a', admin_adjustment: '#6b7280',
 };
 
 function StatCard({ label, value, Icon, color }) {

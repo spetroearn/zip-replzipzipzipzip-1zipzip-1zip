@@ -235,6 +235,64 @@ router.post('/taskwall/callback', async (req, res) => {
 // === TASKWALL POSTBACK END ===
 
 
+// =============================================================================
+// === TOROX POSTBACK START ===
+// =============================================================================
+// Network:    Torox (torox.io)
+// Endpoint:   POST /api/offerwalls/torox/callback
+// Env var:    TOROX_SECRET
+// Payload:    user_id:coins:offer_id  signed with HMAC-SHA256
+// Register this postback URL in your Torox publisher dashboard:
+//   https://<your-domain>/api/offerwalls/torox/callback
+// =============================================================================
+
+router.post('/torox/callback', async (req, res) => {
+  const parsed = parsePostbackBody(req, process.env.TOROX_SECRET);
+  if (!parsed.ok) {
+    console.warn(`[Torox] Rejected postback — ${parsed.message}`);
+    return res.status(parsed.status).send(parsed.message);
+  }
+  try {
+    await creditUser(parsed.userId, parsed.coins, 'torox_offer', `Torox offer #${parsed.offerId}`);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error('[Torox] DB error:', err.message);
+    return res.status(500).send('Server error');
+  }
+});
+
+// === TOROX POSTBACK END ===
+
+
+// =============================================================================
+// === MYCHIPS POSTBACK START ===
+// =============================================================================
+// Network:    MyChips (mychips.io)
+// Endpoint:   POST /api/offerwalls/mychips/callback
+// Env var:    MYCHIPS_SECRET
+// Payload:    user_id:coins:offer_id  signed with HMAC-SHA256
+// Register this postback URL in your MyChips publisher dashboard:
+//   https://<your-domain>/api/offerwalls/mychips/callback
+// =============================================================================
+
+router.post('/mychips/callback', async (req, res) => {
+  const parsed = parsePostbackBody(req, process.env.MYCHIPS_SECRET);
+  if (!parsed.ok) {
+    console.warn(`[MyChips] Rejected postback — ${parsed.message}`);
+    return res.status(parsed.status).send(parsed.message);
+  }
+  try {
+    await creditUser(parsed.userId, parsed.coins, 'mychips_offer', `MyChips offer #${parsed.offerId}`);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error('[MyChips] DB error:', err.message);
+    return res.status(500).send('Server error');
+  }
+});
+
+// === MYCHIPS POSTBACK END ===
+
+
 // ── Public offerwall config (used by frontend Earn page) ─────────────────────
 // Returns the URL template for each enabled network so the frontend
 // can build the iframe src without hardcoding publisher URLs in client code.

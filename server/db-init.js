@@ -89,6 +89,19 @@ async function initDB() {
       );
     `);
 
+    await client.query(`
+      INSERT INTO offerwall_config (network_id, name, url, enabled) VALUES
+        ('adjoe',    'adjoe',    '', true),
+        ('revu',     'Revu',     '', true),
+        ('offery',   'Offery',   '', true),
+        ('ovnix',    'Ovnix',    '', true),
+        ('adtowall', 'AdToWall', '', true),
+        ('taskwall', 'TaskWall', '', true),
+        ('torox',    'Torox',    '', true),
+        ('mychips',  'MyChips',  '', true)
+      ON CONFLICT (network_id) DO NOTHING;
+    `);
+
     const adminExists = await client.query('SELECT id FROM admins WHERE username = $1', ['admin']);
     if (adminExists.rows.length === 0) {
       const hash = await bcrypt.hash('admin123', 12);
