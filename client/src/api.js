@@ -25,7 +25,8 @@ export const api = {
   coins: {
     claimWelcome: () => request('/coins/claim/welcome', { method: 'POST' }),
     claimDaily: () => request('/coins/claim/daily', { method: 'POST' }),
-    history: () => request('/coins/history')
+    history: () => request('/coins/history'),
+    xp3: () => request('/coins/claim/xp3', { method: 'POST' })
   },
   withdraw: {
     submit: (body) => request('/withdraw', { method: 'POST', body: JSON.stringify(body) }),

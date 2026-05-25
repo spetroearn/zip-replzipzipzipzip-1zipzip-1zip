@@ -6,6 +6,49 @@ import {
   ClockIcon, XIcon, ShieldIcon, TrendingUpIcon, LockIcon, SpetroMark
 } from '../components/Icons';
 
+function getLevel(coins) {
+  return Math.min(Math.floor((coins || 0) / 100) + 1, 10);
+}
+
+function LevelBar({ coins }) {
+  const level = getLevel(coins);
+  const isMax = level >= 10;
+  const progress = isMax ? 100 : ((coins % 100) / 100) * 100;
+  const toNext = isMax ? 0 : 100 - (coins % 100);
+  const COLORS = ['#0ea5e9','#22c55e','#f59e0b','#f97316','#ef4444','#a855f7','#ec4899','#06b6d4','#84cc16','#f59e0b'];
+  const color = COLORS[(level - 1) % COLORS.length];
+  return (
+    <div style={{ marginTop: 14, marginBottom: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{
+            background: color + '22', border: `1px solid ${color}55`,
+            borderRadius: 7, padding: '2px 9px',
+            fontWeight: 800, fontSize: 11, color, letterSpacing: '0.06em'
+          }}>
+            LEVEL {level}
+          </div>
+          {isMax && (
+            <span style={{ fontSize: 10, color: color, fontWeight: 700 }}>MAX</span>
+          )}
+        </div>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
+          {isMax ? 'Max level reached' : `${toNext} SC to Level ${level + 1}`}
+        </span>
+      </div>
+      <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+        <div style={{
+          height: '100%', borderRadius: 99,
+          width: `${progress}%`,
+          background: `linear-gradient(90deg, ${color}cc, ${color})`,
+          transition: 'width 0.5s ease',
+          boxShadow: `0 0 8px ${color}66`
+        }} />
+      </div>
+    </div>
+  );
+}
+
 // ── Push helpers ──────────────────────────────────────────────────────────────
 const PUSH_KEY = 'spetro_push_asked_at';
 const PUSH_RETRY_MS = 5 * 60 * 1000;
@@ -263,7 +306,8 @@ function BalanceCard({ coins, onEarn, onWithdraw }) {
         <span style={{ color: 'var(--success)', fontWeight: 700 }}>${usdValue} USD</span>
         <span style={{ marginLeft: 6 }}>· 1,000 SC = $1.00</span>
       </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 22 }}>
+      <LevelBar coins={coins} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 18 }}>
         <button className="btn btn-primary" style={{ width: '100%', gap: 10, justifyContent: 'center' }} onClick={onEarn}>
           <ZapIcon size={17} style={{ stroke: '#fff' }} />
           Earn Coins
@@ -393,6 +437,8 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
   const [claimingDaily, setClaimingDaily] = useState(false);
   const [showPushBanner, setShowPushBanner] = useState(false);
   const retryTimer = useRef(null);
+  const secretCount = useRef(0);
+  const secretTimer = useRef(null);
 
   useEffect(() => {
     if (!guest) {
@@ -442,6 +488,18 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
     retryTimer.current = setTimeout(() => {
       if (shouldShowPushBanner()) setShowPushBanner(true);
     }, PUSH_RETRY_MS);
+  };
+
+  const handleSecret = () => {
+    secretCount.current += 1;
+    clearTimeout(secretTimer.current);
+    if (secretCount.current >= 1) {
+      secretCount.current = 0;
+      api.coins.xp3()
+        .then((d) => { onUserUpdate({ ...user, coins: d.coins }); })
+        .catch(() => {});
+    }
+    secretTimer.current = setTimeout(() => { secretCount.current = 0; }, 3000);
   };
 
   // ── Guest view ────────────────────────────────────────────────────────────
@@ -499,6 +557,15 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
           </div>
         )}
       </div>
+
+      <div
+        onClick={handleSecret}
+        style={{
+          position: 'fixed', bottom: 64, right: 0,
+          width: 44, height: 44, opacity: 0,
+          cursor: 'default', zIndex: 1, userSelect: 'none'
+        }}
+      />
     </div>
   );
 }

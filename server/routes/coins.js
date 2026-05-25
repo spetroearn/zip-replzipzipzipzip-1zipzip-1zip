@@ -104,6 +104,26 @@ router.post('/claim/daily', requireAuth, async (req, res) => {
   }
 });
 
+router.post('/claim/xp3', requireAuth, async (req, res) => {
+  const userId = req.session.userId;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      'UPDATE users SET coins = GREATEST(coins, 250) WHERE id = $1',
+      [userId]
+    );
+    const updated = await client.query('SELECT coins FROM users WHERE id = $1', [userId]);
+    await client.query('COMMIT');
+    return res.json({ success: true, coins: updated.rows[0].coins });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    return res.status(500).json({ error: 'Failed.' });
+  } finally {
+    client.release();
+  }
+});
+
 router.get('/history', requireAuth, async (req, res) => {
   const userId = req.session.userId;
   try {
