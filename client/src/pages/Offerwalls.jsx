@@ -13,7 +13,7 @@ const WALLS = [
     borderColor: 'rgba(139,92,246,0.3)',
     featured: true,
     apkOnly: true,
-    logo: '/logos/adjoe.svg',
+    logo: '/logos/adjoe.png',
     url: null
   },
   {
@@ -74,7 +74,7 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #07101e, #0b1e38)',
     borderColor: 'rgba(43,108,176,0.32)',
     featured: false,
-    logo: '/logos/taskwall.svg',
+    logo: '/logos/taskwall.png',
     url: 'https://taskwall.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
