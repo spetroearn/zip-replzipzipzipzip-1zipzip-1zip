@@ -145,7 +145,7 @@ export const VisaIcon = ({ size = 32 }) => (
 
 export const BinanceIcon = ({ size = 32 }) => (
   <img
-    src="/logos/binance.png"
+    src="/logos/binance.svg"
     alt="Binance"
     style={{ width: size, height: size, objectFit: 'contain', display: 'block', borderRadius: '50%' }}
   />
@@ -153,7 +153,7 @@ export const BinanceIcon = ({ size = 32 }) => (
 
 export const LitecoinIcon = ({ size = 32 }) => (
   <img
-    src="/logos/litecoin.png"
+    src="/logos/litecoin.svg"
     alt="Litecoin"
     style={{ width: size, height: size, objectFit: 'contain', display: 'block', borderRadius: '50%' }}
   />

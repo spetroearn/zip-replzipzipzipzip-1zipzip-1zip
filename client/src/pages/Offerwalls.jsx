@@ -13,7 +13,7 @@ const WALLS = [
     borderColor: 'rgba(139,92,246,0.3)',
     featured: true,
     apkOnly: true,
-    logo: '/logos/adjoe.png',
+    logo: '/logos/adjoe.svg',
     url: null
   },
   {
@@ -74,7 +74,7 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #07101e, #0b1e38)',
     borderColor: 'rgba(43,108,176,0.32)',
     featured: false,
-    logo: '/logos/taskwall.png',
+    logo: '/logos/taskwall.svg',
     url: 'https://taskwall.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
@@ -539,6 +539,26 @@ export default function Offerwalls({ user, guest, onGoLogin, onGoRegister }) {
   );
 }
 
+// ── Featured wall logo with onError fallback ──────────────────────────────────
+function FeaturedLogo({ logo, name, color }) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <span style={{ fontWeight: 900, fontSize: 14, color, letterSpacing: '-0.5px' }}>
+        {name.slice(0, 2).toUpperCase()}
+      </span>
+    );
+  }
+  return (
+    <img
+      src={logo}
+      alt={name}
+      onError={() => setErr(true)}
+      style={{ maxHeight: 36, maxWidth: 44, objectFit: 'contain', borderRadius: 6, display: 'block' }}
+    />
+  );
+}
+
 // Detects whether the app is running inside our Android APK via AndroidBridge.
 function isNativeApp() {
   return typeof window !== 'undefined' && !!window.AndroidBridge;
@@ -604,11 +624,7 @@ function FeaturedWallCard({ wall, user }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           overflow: 'hidden', opacity: isLocked ? 0.6 : 1
         }}>
-          <img
-            src={wall.logo}
-            alt={wall.name}
-            style={{ maxHeight: 35, width: 'auto', objectFit: 'contain', borderRadius: 6, display: 'block' }}
-          />
+          <FeaturedLogo logo={wall.logo} name={wall.name} color={wall.color} />
         </div>
         <div>
           <p style={{ fontWeight: 800, fontSize: 18, color: wall.color }}>{wall.name}</p>

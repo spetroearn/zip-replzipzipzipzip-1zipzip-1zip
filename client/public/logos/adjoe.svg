@@ -1,10 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
     <linearGradient id="adjoeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#9333ea"/>
-      <stop offset="100%" style="stop-color:#6d28d9"/>
+      <stop offset="0%" style="stop-color:#a855f7"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
     </linearGradient>
   </defs>
   <rect width="200" height="200" rx="44" fill="url(#adjoeGrad)"/>
-  <text x="100" y="140" font-family="Arial Black, Arial" font-weight="900" font-size="110" fill="white" text-anchor="middle" letter-spacing="-4">a</text>
+  <!-- stylized "a" wordmark -->
+  <text x="100" y="145" font-family="Georgia, serif" font-weight="700" font-size="120" fill="white" text-anchor="middle" letter-spacing="-2">a</text>
+  <!-- dot accent -->
+  <circle cx="140" cy="68" r="10" fill="white" opacity="0.9"/>
 </svg>
