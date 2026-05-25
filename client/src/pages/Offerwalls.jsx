@@ -26,6 +26,7 @@ const WALLS = [
     borderColor: 'rgba(14,165,233,0.4)',
     featured: false,
     logo: '/logos/revu.png',
+    logoScale: 2.2,
     url: 'https://revu.net/offerwall?pub_id=YOUR_PUB_ID&user_id={USER_ID}'
   },
   {
@@ -39,6 +40,7 @@ const WALLS = [
     borderColor: 'rgba(6,182,212,0.28)',
     featured: false,
     logo: '/logos/offery.png',
+    logoScale: 2.2,
     url: 'https://offery.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   },
   {
@@ -367,7 +369,8 @@ function WallCard({ wall, vpnBlocked, userId, onOpenModal }) {
                 height: '100%',
                 objectFit: 'contain',
                 display: 'block',
-                padding: 4
+                padding: 4,
+                transform: wall.logoScale ? `scale(${wall.logoScale})` : undefined
               }}
             />
           ) : (
