@@ -89,7 +89,7 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #0e0820, #180d38)',
     borderColor: 'rgba(155,95,255,0.3)',
     featured: false,
-    logo: '/logos/torox.png',
+    logo: '/logos/torox.svg',
     url: 'https://torox.io/ifr/show/YOUR_APP_ID/{USER_ID}/YOUR_APP_TOKEN'
   },
   {
@@ -101,7 +101,7 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #141000, #221a00)',
     borderColor: 'rgba(245,196,0,0.3)',
     featured: false,
-    logo: '/logos/mychips.png',
+    logo: '/logos/mychips.svg',
     url: 'https://mychips.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
