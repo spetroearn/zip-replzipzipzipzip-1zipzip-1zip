@@ -89,7 +89,7 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #0e0820, #180d38)',
     borderColor: 'rgba(155,95,255,0.3)',
     featured: false,
-    logo: '/logos/torox.svg',
+    logo: '/logos/torox.png',
     url: 'https://torox.io/ifr/show/YOUR_APP_ID/{USER_ID}/YOUR_APP_TOKEN'
   },
   {
@@ -97,11 +97,11 @@ const WALLS = [
     name: 'MyChips',
     subtitle: 'Chip Rewards',
     description: 'Earn chips by completing surveys, offers, and daily tasks on MyChips.',
-    color: '#0096BA',
-    bg: 'linear-gradient(145deg, #030d12, #051a22)',
-    borderColor: 'rgba(0,150,186,0.3)',
+    color: '#F5C400',
+    bg: 'linear-gradient(145deg, #141000, #221a00)',
+    borderColor: 'rgba(245,196,0,0.3)',
     featured: false,
-    logo: '/logos/mychips.svg',
+    logo: '/logos/mychips.png',
     url: 'https://mychips.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
