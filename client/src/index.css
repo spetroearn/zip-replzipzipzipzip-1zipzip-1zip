@@ -36,6 +36,7 @@ html, body {
   color: var(--text);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
 }
 
 #root {
@@ -230,6 +231,36 @@ input, select, textarea { font-family: inherit; outline: none; }
   justify-content: space-around;
   padding: 10px 0 20px;
   z-index: 100;
+}
+
+/* ── Desktop Layout ── */
+@media (min-width: 640px) {
+  body {
+    background: #04070c;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(14,165,233,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 50%, rgba(14,165,233,0.04) 0%, transparent 70%);
+  }
+
+  #root {
+    align-items: center;
+  }
+
+  .page-container {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: var(--bg);
+    box-shadow: 0 0 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(14,165,233,0.08);
+    position: relative;
+  }
+
+  .bottom-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    border-radius: 0;
+  }
 }
 .nav-item {
   display: flex;
