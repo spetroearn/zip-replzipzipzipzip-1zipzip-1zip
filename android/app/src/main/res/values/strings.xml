@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Spetro Earn</string>
+    <string name="title_activity_main">Spetro Earn</string>
+    <string name="package_name">com.spetro.earn</string>
+    <string name="custom_url_scheme">com.spetro.earn</string>
+</resources>

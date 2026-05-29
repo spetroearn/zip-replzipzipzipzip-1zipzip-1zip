@@ -17,8 +17,15 @@
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-<!-- For advertising ID (required by Adjoe for offer attribution) -->
+<!-- For advertising ID / App Tracking (required by Adjoe for offer attribution) -->
 <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
+<!-- Package Usage Stats — required by Adjoe Playtime to measure gaming minutes.
+     Special-access permission: the user must grant it from Settings > Usage Access.
+     Needs xmlns:tools on <manifest> and tools:ignore to pass lint. -->
+<uses-permission
+    android:name="android.permission.PACKAGE_USAGE_STATS"
+    tools:ignore="ProtectedPermissions" />
 
 
 <!-- ── Activity configuration (inside <application>) ─────────────────────── -->

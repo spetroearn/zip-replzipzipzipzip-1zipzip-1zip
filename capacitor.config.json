@@ -11,6 +11,7 @@
     "webContentsDebuggingEnabled": false
   },
   "server": {
+    "url": "https://spetroearn.com",
     "androidScheme": "https",
     "cleartext": false
   },
