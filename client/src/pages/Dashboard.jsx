@@ -114,6 +114,74 @@ function PushBanner({ onDismiss }) {
   );
 }
 
+// ── Locked top offers (guest) ──────────────────────────────────────────────────
+function LockedTopOffers() {
+  const goGoogle = () => { window.location.href = '/api/auth/google'; };
+  const OFFERS = [
+    { logo: '/logos/coinmaster.png', name: 'Coin Master', task: 'Reach Village 3 to Earn', reward: '+1,200' },
+    { logo: '/logos/tiktok.png', name: 'TikTok', task: 'Install & Watch Videos for 10 Mins to Earn', reward: '+800' },
+    { logo: '/logos/monopolygo.jpg', name: 'Monopoly GO', task: 'Reach Board 5 to Earn', reward: '+2,500' },
+    { logo: '/logos/riseofkingdoms.png', name: 'Rise of Kingdoms', task: 'Upgrade City Hall to Level 10 to Earn', reward: '+5,000' },
+  ];
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p className="section-title" style={{ margin: 0 }}>Top Offers</p>
+        <span style={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: 'var(--coin)', background: 'rgba(245,158,11,0.12)',
+          border: '1px solid rgba(245,158,11,0.28)', borderRadius: 7, padding: '3px 9px'
+        }}>Premium</span>
+      </div>
+      <div className="locked-offers-grid">
+        {OFFERS.map((o) => (
+          <button key={o.name} className="locked-offer-card" onClick={goGoogle}>
+            <img src={o.logo} alt={o.name} className="locked-offer-logo" />
+            <p className="locked-offer-name">{o.name}</p>
+            <p className="locked-offer-task">{o.task}</p>
+            <span className="locked-offer-reward">
+              <CoinIcon size={14} /> {o.reward} SC
+            </span>
+            <div className="locked-offer-overlay">
+              <div className="locked-offer-lock">
+                <LockIcon size={20} style={{ stroke: 'var(--primary)' }} />
+              </div>
+              <span className="unlock-btn">
+                <LockIcon size={13} style={{ stroke: '#fff' }} /> Unlock Offer
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ── Partner offerwalls grid (guest) ─────────────────────────────────────────────
+function PartnerOfferwalls() {
+  const PARTNERS = [
+    { logo: '/logos/lootably.png', name: 'Lootably' },
+    { logo: '/logos/timewall.png', name: 'Timewall' },
+    { logo: '/logos/bitlabs.svg', name: 'BitLabs' },
+    { logo: '/logos/adjoe.png', name: 'adjoe' },
+  ];
+  return (
+    <>
+      <p className="section-title">Trusted Partners</p>
+      <div className="partner-grid">
+        {PARTNERS.map((p) => (
+          <div key={p.name} className="partner-cell">
+            <img src={p.logo} alt={p.name} />
+          </div>
+        ))}
+      </div>
+      <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5, lineHeight: 1.6, marginBottom: 8 }}>
+        Sign in to unlock access to 15+ trusted global rewards networks.
+      </p>
+    </>
+  );
+}
+
 // ── Guest landing ─────────────────────────────────────────────────────────────
 function GuestLanding({ onGoLogin, onGoRegister }) {
   const FEATURES = [
@@ -217,6 +285,12 @@ function GuestLanding({ onGoLogin, onGoRegister }) {
           </button>
         </div>
       </div>
+
+      {/* Locked top offers */}
+      <LockedTopOffers />
+
+      {/* Partner offerwalls */}
+      <PartnerOfferwalls />
 
       {/* Locked balance preview */}
       <div style={{ position: 'relative', marginBottom: 18 }}>
@@ -430,42 +504,78 @@ function TxRow({ tx }) {
   );
 }
 
-// ── Telegram banner ───────────────────────────────────────────────────────────
-function TelegramBanner() {
+// ── Social banner (Telegram / YouTube) ─────────────────────────────────────────
+function SocialBanner({ href, gradient, borderColor, iconBg, accent, title, desc, icon }) {
   return (
     <a
-      href="https://t.me"
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       style={{
         textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14,
-        background: 'linear-gradient(135deg, #0a2a44, #0a1f33)',
-        border: '1px solid rgba(34,158,217,0.35)',
-        borderRadius: 16, padding: '16px 18px', marginBottom: 16,
+        background: gradient,
+        border: `1px solid ${borderColor}`,
+        borderRadius: 16, padding: '16px 18px', marginBottom: 12,
       }}
     >
       <div style={{
         width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-        background: 'rgba(34,158,217,0.18)',
+        background: iconBg,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="#229ED9">
-          <path d="M21.95 4.32 18.7 19.66c-.24 1.08-.88 1.35-1.78.84l-4.92-3.63-2.37 2.28c-.26.26-.48.48-.99.48l.35-5.02 9.13-8.25c.4-.35-.09-.55-.62-.2L5.2 13.04l-4.86-1.52c-1.06-.33-1.08-1.06.22-1.57L20.58 2.8c.88-.33 1.65.2 1.37 1.52Z"/>
-        </svg>
+        {icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
-          Follow us on Telegram
+          {title}
         </p>
         <p style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.5 }}>
-          Join our channel for news, payout proofs, and bonus drops.
+          {desc}
         </p>
       </div>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-        stroke="#229ED9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.8 }}>
+        stroke={accent} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.8 }}>
         <path d="M9 18l6-6-6-6"/>
       </svg>
     </a>
+  );
+}
+
+function TelegramBanner() {
+  return (
+    <SocialBanner
+      href="https://t.me/spetroearn"
+      gradient="linear-gradient(135deg, #0a2a44, #0a1f33)"
+      borderColor="rgba(34,158,217,0.35)"
+      iconBg="rgba(34,158,217,0.18)"
+      accent="#229ED9"
+      title="Follow us on Telegram"
+      desc="Join our channel for news, payout proofs, and bonus drops."
+      icon={
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#229ED9">
+          <path d="M21.95 4.32 18.7 19.66c-.24 1.08-.88 1.35-1.78.84l-4.92-3.63-2.37 2.28c-.26.26-.48.48-.99.48l.35-5.02 9.13-8.25c.4-.35-.09-.55-.62-.2L5.2 13.04l-4.86-1.52c-1.06-.33-1.08-1.06.22-1.57L20.58 2.8c.88-.33 1.65.2 1.37 1.52Z"/>
+        </svg>
+      }
+    />
+  );
+}
+
+function YouTubeBanner() {
+  return (
+    <SocialBanner
+      href="https://www.youtube.com/@SpetroEarn"
+      gradient="linear-gradient(135deg, #2e0d10, #1f0b0d)"
+      borderColor="rgba(255,0,0,0.32)"
+      iconBg="rgba(255,0,0,0.16)"
+      accent="#FF0000"
+      title="Follow us on YouTube"
+      desc="Watch tutorials, payout proofs, and earning tips."
+      icon={
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#FF0000">
+          <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2C0 8.07 0 12 0 12s0 3.93.5 5.8a3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.8ZM9.6 15.6V8.4l6.27 3.6L9.6 15.6Z"/>
+        </svg>
+      }
+    />
   );
 }
 
@@ -580,6 +690,7 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
           />
 
           <TelegramBanner />
+          <YouTubeBanner />
         </div>
 
         <div className="dash-col">
