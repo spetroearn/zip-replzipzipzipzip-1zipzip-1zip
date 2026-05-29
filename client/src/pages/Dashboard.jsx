@@ -582,6 +582,25 @@ function YouTubeBanner() {
   );
 }
 
+function TrustpilotBanner() {
+  return (
+    <SocialBanner
+      href="https://www.trustpilot.com/review/spetroearn.com?_gl=1*1eyn4l0*_gcl_au*NTQzOTA0NzM1LjE3NzkyNDMwMzA.*_ga*MTQ4MDkyMDM3LjE3NzkyNDMwMzA.*_ga_11HBWMC274*czE3ODAwNTY5MzYkbzEkZzEkdDE3ODAwNTg4MDkkajYwJGwwJGgw"
+      gradient="linear-gradient(135deg, #0a2a1c, #081f16)"
+      borderColor="rgba(0,182,122,0.35)"
+      iconBg="rgba(0,182,122,0.16)"
+      accent="#00B67A"
+      title="Review us on Trustpilot"
+      desc="Loving Spetro Earn? Leave us a review and help others discover us."
+      icon={
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="#00B67A">
+          <path d="M12 2l2.95 6.32 6.95.73-5.18 4.66 1.46 6.81L12 17.77 5.82 21.33l1.46-6.81L2.1 9.85l6.95-.73L12 2z"/>
+        </svg>
+      }
+    />
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoLogin, onGoRegister }) {
   const toast = useToast();
@@ -701,6 +720,7 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
 
           <TelegramBanner />
           <YouTubeBanner />
+          <TrustpilotBanner />
         </div>
 
         <div className="dash-col">
