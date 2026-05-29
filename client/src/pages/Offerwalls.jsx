@@ -250,9 +250,8 @@ function OfferModal({ wall, userId, onClose }) {
               Offerwall URL Not Configured
             </p>
             <p style={{ color: '#7d8fa8', fontSize: 14, maxWidth: 290, lineHeight: 1.65 }}>
-              Set the publisher embed URL for{' '}
               <strong style={{ color: wall.color }}>{wall.name}</strong>{' '}
-              in the admin panel under Offerwalls.
+              is not available yet. Check back soon.
             </p>
             <button
               onClick={onClose}

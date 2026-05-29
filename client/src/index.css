@@ -209,7 +209,7 @@ input, select, textarea { font-family: inherit; outline: none; }
 .badge-banned { background: rgba(239,68,68,0.15); color: var(--error); border: 1px solid rgba(239,68,68,0.25); }
 
 /* ── Layout ── */
-.page-container { min-height: 100vh; display: flex; flex-direction: column; }
+.page-container { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
 
 .screen {
   flex: 1;
