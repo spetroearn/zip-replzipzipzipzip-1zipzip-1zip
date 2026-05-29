@@ -210,21 +210,52 @@ router.post('/adtowall/callback', async (req, res) => {
 // === TASKWALL POSTBACK START ===
 // =============================================================================
 // Network:    TaskWall
-// Endpoint:   POST /api/offerwalls/taskwall/callback
-// Env var:    TASKWALL_SECRET
-// Payload:    user_id:coins:offer_id  signed with HMAC-SHA256
+// Endpoint:   GET or POST /api/offerwalls/taskwall/callback
+// Env var:    TASKWALL_SECRET  (set this same value as the "Postback Password"
+//             in the TaskWall dashboard — it is sent back as &password=)
+// TaskWall macros: {userid} {user_amount} {offer_id} {offer_name} {payout} ...
 // Register this postback URL in your TaskWall publisher dashboard:
-//   https://<your-domain>/api/offerwalls/taskwall/callback
+//   https://<your-domain>/api/offerwalls/taskwall/callback?userid={userid}&amount={user_amount}&offer_id={offer_id}
+// (TaskWall appends the configured Postback Password automatically.)
 // =============================================================================
 
-router.post('/taskwall/callback', async (req, res) => {
-  const parsed = parsePostbackBody(req, process.env.TASKWALL_SECRET);
-  if (!parsed.ok) {
-    console.warn(`[TaskWall] Rejected postback — ${parsed.message}`);
-    return res.status(parsed.status).send(parsed.message);
+// Constant-time compare that won't throw on differing lengths.
+function safeEqual(a, b) {
+  const bufA = Buffer.from(String(a || ''));
+  const bufB = Buffer.from(String(b || ''));
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+router.all('/taskwall/callback', async (req, res) => {
+  const secret = process.env.TASKWALL_SECRET;
+  if (!secret) {
+    console.warn('[TaskWall] Rejected postback — Secret not configured on server.');
+    return res.status(500).send('Secret not configured on server.');
   }
+
+  // TaskWall sends macros via query string (GET); accept POST body too.
+  const p = { ...req.body, ...req.query };
+
+  // The Postback Password is returned as `password`; also accept `key` for
+  // setups that embed the secret directly in the URL.
+  const provided = p.password ?? p.key;
+  if (!safeEqual(provided, secret)) {
+    console.warn('[TaskWall] Rejected postback — Invalid password.');
+    return res.status(403).send('Invalid password.');
+  }
+
+  const userId = parseInt(p.userid ?? p.user_id, 10);
+  const coins  = parseInt(p.amount ?? p.user_amount ?? p.coins, 10);
+  const offerId = p.offer_id ?? p.offerid ?? '';
+
+  if (isNaN(userId) || isNaN(coins) || coins <= 0) {
+    console.warn('[TaskWall] Rejected postback — Invalid userid or amount.');
+    return res.status(400).send('Invalid userid or amount.');
+  }
+
   try {
-    await creditUser(parsed.userId, parsed.coins, 'taskwall_offer', `TaskWall offer #${parsed.offerId}`);
+    await creditUser(userId, coins, 'taskwall_offer', `TaskWall offer #${offerId}`);
     return res.status(200).send('OK');
   } catch (err) {
     console.error('[TaskWall] DB error:', err.message);
