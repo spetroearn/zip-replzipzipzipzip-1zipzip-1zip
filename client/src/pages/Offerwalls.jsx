@@ -106,6 +106,15 @@ const WALLS = [
   }
 ];
 
+// Returns true only when a REAL offerwall link is set (not empty, not a
+// placeholder like YOUR_PUB_ID / YOUR_APP_ID). Until then the wall shows
+// "Coming Soon"; once a real URL is added it auto-switches to "Open Offerwall".
+function hasRealUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  if (url.includes('YOUR_')) return false;
+  return /^https?:\/\//i.test(url.trim());
+}
+
 // ── Offerwall iframe modal (rendered via portal → always above everything) ─────
 function OfferModal({ wall, userId, onClose }) {
   const iframeRef = useRef(null);
@@ -351,13 +360,15 @@ function getLevel(coins) {
   return Math.min(Math.floor((coins || 0) / 100) + 1, 10);
 }
 
-function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
+function WallCard({ wall, ready, vpnBlocked, levelBlocked, userId, onOpenModal }) {
   const [hovered, setHovered] = useState(false);
   const [imgError, setImgError] = useState(false);
   const isLocked = vpnBlocked || levelBlocked;
+  const notReady = !ready;
+  const interactive = !isLocked && !notReady;
 
   const handleOpen = () => {
-    if (isLocked) return;
+    if (!interactive) return;
     onOpenModal(wall);
   };
 
@@ -367,13 +378,13 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         background: wall.bg,
-        border: `1px solid ${hovered && !isLocked ? wall.color + '66' : wall.borderColor}`,
+        border: `1px solid ${hovered && interactive ? wall.color + '66' : wall.borderColor}`,
         borderRadius: 14,
         padding: '16px 16px 14px',
-        cursor: isLocked ? 'default' : 'pointer',
+        cursor: interactive ? 'pointer' : 'default',
         transition: 'border-color 0.2s, transform 0.18s, box-shadow 0.2s',
-        transform: hovered && !isLocked ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: hovered && !isLocked ? `0 8px 28px ${wall.color}22` : '0 2px 8px rgba(0,0,0,0.3)',
+        transform: hovered && interactive ? 'translateY(-2px)' : 'translateY(0)',
+        boxShadow: hovered && interactive ? `0 8px 28px ${wall.color}22` : '0 2px 8px rgba(0,0,0,0.3)',
         opacity: isLocked ? 0.55 : 1,
         position: 'relative'
       }}
@@ -402,7 +413,7 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           overflow: 'hidden',
           transition: 'background 0.2s, border-color 0.2s',
-          ...(hovered && !isLocked && !wall.logoBg ? { background: `${wall.color}28`, borderColor: `${wall.color}77` } : {})
+          ...(hovered && interactive && !wall.logoBg ? { background: `${wall.color}28`, borderColor: `${wall.color}77` } : {})
         }}>
           {!imgError ? (
             <img
@@ -427,7 +438,7 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{
             fontWeight: 800, fontSize: 15,
-            color: hovered && !isLocked ? wall.color : 'var(--text)',
+            color: hovered && interactive ? wall.color : 'var(--text)',
             transition: 'color 0.18s',
             letterSpacing: '-0.01em'
           }}>
@@ -442,8 +453,8 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
         </div>
         <div style={{
           width: 8, height: 8, borderRadius: '50%',
-          background: isLocked ? '#555' : wall.color,
-          boxShadow: isLocked ? 'none' : `0 0 6px ${wall.color}`,
+          background: interactive ? wall.color : '#555',
+          boxShadow: interactive ? `0 0 6px ${wall.color}` : 'none',
           flexShrink: 0, opacity: hovered ? 1 : 0.5,
           transition: 'opacity 0.2s'
         }} />
@@ -460,31 +471,31 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
       {/* Action button */}
       <button
         onClick={handleOpen}
-        disabled={isLocked}
+        disabled={!interactive}
         style={{
           width: '100%',
           padding: '9px 0',
           borderRadius: 9,
-          border: `1px solid ${isLocked ? 'rgba(255,255,255,0.08)' : wall.color + '55'}`,
-          background: isLocked
-            ? 'rgba(255,255,255,0.04)'
-            : hovered ? `${wall.color}22` : `${wall.color}0d`,
-          color: isLocked ? 'var(--text-dim)' : wall.color,
+          border: `1px solid ${interactive ? wall.color + '55' : 'rgba(255,255,255,0.08)'}`,
+          background: interactive
+            ? (hovered ? `${wall.color}22` : `${wall.color}0d`)
+            : 'rgba(255,255,255,0.04)',
+          color: interactive ? wall.color : 'var(--text-dim)',
           fontWeight: 700,
           fontSize: 13,
           fontFamily: 'inherit',
-          cursor: isLocked ? 'not-allowed' : 'pointer',
+          cursor: interactive ? 'pointer' : 'not-allowed',
           letterSpacing: '0.02em',
           transition: 'background 0.18s, border-color 0.18s',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7
         }}
         onMouseEnter={(e) => {
-          if (isLocked) return;
+          if (!interactive) return;
           e.currentTarget.style.background = `${wall.color}2e`;
           e.currentTarget.style.borderColor = `${wall.color}88`;
         }}
         onMouseLeave={(e) => {
-          if (isLocked) return;
+          if (!interactive) return;
           e.currentTarget.style.background = hovered ? `${wall.color}22` : `${wall.color}0d`;
           e.currentTarget.style.borderColor = `${wall.color}55`;
         }}
@@ -502,6 +513,13 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
               <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
             Level {wall.minLevel} Required
+          </>
+        ) : notReady ? (
+          <>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+            </svg>
+            Coming Soon
           </>
         ) : (
           <>
@@ -588,16 +606,20 @@ export default function Offerwalls({ user, guest, onGoLogin, onGoRegister }) {
 
       {/* Other walls */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {others.map((wall) => (
-          <WallCard
-            key={wall.id}
-            wall={wall}
-            vpnBlocked={vpnBlocked}
-            levelBlocked={!!wall.minLevel && getLevel(user?.coins) < wall.minLevel}
-            userId={user?.id}
-            onOpenModal={(w) => setActiveModal({ ...w, url: urlConfig[w.id]?.url ?? w.url })}
-          />
-        ))}
+        {others.map((wall) => {
+          const resolvedUrl = urlConfig[wall.id]?.url ?? wall.url;
+          return (
+            <WallCard
+              key={wall.id}
+              wall={wall}
+              ready={hasRealUrl(resolvedUrl)}
+              vpnBlocked={vpnBlocked}
+              levelBlocked={!!wall.minLevel && getLevel(user?.coins) < wall.minLevel}
+              userId={user?.id}
+              onOpenModal={(w) => setActiveModal({ ...w, url: resolvedUrl })}
+            />
+          );
+        })}
       </div>
     </div>
   );
