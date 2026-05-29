@@ -115,8 +115,7 @@ function PushBanner({ onDismiss }) {
 }
 
 // ── Locked top offers (guest) ──────────────────────────────────────────────────
-function LockedTopOffers() {
-  const goGoogle = () => { window.location.href = '/api/auth/google'; };
+function LockedTopOffers({ onUnlock }) {
   const OFFERS = [
     { logo: '/logos/coinmaster.png', name: 'Coin Master', task: 'Reach Village 3 to Earn', reward: '+1,200' },
     { logo: '/logos/tiktok.png', name: 'TikTok', task: 'Install & Watch Videos for 10 Mins to Earn', reward: '+800' },
@@ -135,7 +134,7 @@ function LockedTopOffers() {
       </div>
       <div className="locked-offers-grid">
         {OFFERS.map((o) => (
-          <button key={o.name} className="locked-offer-card" onClick={goGoogle}>
+          <button key={o.name} className="locked-offer-card" onClick={onUnlock}>
             <img src={o.logo} alt={o.name} className="locked-offer-logo" />
             <p className="locked-offer-name">{o.name}</p>
             <p className="locked-offer-task">{o.task}</p>
@@ -167,18 +166,14 @@ function PartnerOfferwalls() {
     { logo: '/logos/adtowall.png', name: 'AdToWall' },
     { logo: '/logos/taskwall.png', name: 'TaskWall' },
     { logo: '/logos/torox.svg', name: 'Torox' },
-    { logo: '/logos/mychips.png', name: 'MyChips', light: true },
+    { logo: '/logos/mychips.png', name: 'MyChips' },
   ];
   return (
     <>
       <p className="section-title">Our Offerwalls</p>
       <div className="partner-grid">
         {PARTNERS.map((p) => (
-          <div
-            key={p.name}
-            className="partner-cell"
-            style={p.light ? { background: '#fff', borderColor: 'rgba(255,255,255,0.18)' } : undefined}
-          >
+          <div key={p.name} className="partner-cell">
             <img src={p.logo} alt={p.name} />
           </div>
         ))}
@@ -295,7 +290,7 @@ function GuestLanding({ onGoLogin, onGoRegister }) {
       </div>
 
       {/* Locked top offers */}
-      <LockedTopOffers />
+      <LockedTopOffers onUnlock={onGoRegister} />
 
       {/* Partner offerwalls */}
       <PartnerOfferwalls />
@@ -697,11 +692,6 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
             onWithdraw={() => onNavigate('withdraw')}
           />
 
-          <TelegramBanner />
-          <YouTubeBanner />
-        </div>
-
-        <div className="dash-col">
           <WeekStreak
             streak={user?.checkin_streak || 0}
             lastCheckin={user?.last_checkin}
@@ -709,6 +699,11 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
             loading={claimingDaily}
           />
 
+          <TelegramBanner />
+          <YouTubeBanner />
+        </div>
+
+        <div className="dash-col">
           <div>
             <p className="section-title">Recent Activity</p>
             {transactions.length === 0 ? (

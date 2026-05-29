@@ -102,8 +102,6 @@ const WALLS = [
     borderColor: 'rgba(245,196,0,0.3)',
     featured: false,
     logo: '/logos/mychips.png',
-    logoBg: '#ffffff',
-    logoScale: 1.15,
     url: 'https://mychips.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
