@@ -160,14 +160,18 @@ function LockedTopOffers() {
 // ── Partner offerwalls grid (guest) ─────────────────────────────────────────────
 function PartnerOfferwalls() {
   const PARTNERS = [
-    { logo: '/logos/lootably.png', name: 'Lootably' },
-    { logo: '/logos/timewall.png', name: 'Timewall' },
-    { logo: '/logos/bitlabs.svg', name: 'BitLabs' },
     { logo: '/logos/adjoe.png', name: 'adjoe' },
+    { logo: '/logos/revu.png', name: 'Revu' },
+    { logo: '/logos/offery.png', name: 'Offery' },
+    { logo: '/logos/ovnix.png', name: 'Ovnix' },
+    { logo: '/logos/adtowall.png', name: 'AdToWall' },
+    { logo: '/logos/taskwall.png', name: 'TaskWall' },
+    { logo: '/logos/torox.svg', name: 'Torox' },
+    { logo: '/logos/mychips.svg', name: 'MyChips' },
   ];
   return (
     <>
-      <p className="section-title">Trusted Partners</p>
+      <p className="section-title">Our Offerwalls</p>
       <div className="partner-grid">
         {PARTNERS.map((p) => (
           <div key={p.name} className="partner-cell">
@@ -176,7 +180,7 @@ function PartnerOfferwalls() {
         ))}
       </div>
       <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5, lineHeight: 1.6, marginBottom: 8 }}>
-        Sign in to unlock access to 15+ trusted global rewards networks.
+        Sign in to unlock access to all our trusted rewards networks.
       </p>
     </>
   );
