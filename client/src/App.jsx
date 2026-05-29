@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ToastProvider } from './components/Toast';
 import BottomNav from './components/BottomNav';
+import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -125,7 +127,9 @@ function AppInner() {
           onGoRegister={goToRegister}
         />
       )}
+      <Footer />
       <BottomNav active={activeTab} onChange={handleTabChange} guest={isGuest} />
+      <CookieConsent />
     </div>
   );
 }

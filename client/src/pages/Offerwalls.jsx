@@ -701,57 +701,33 @@ function FeaturedWallCard({ wall, user }) {
       </p>
 
       {isLocked ? (
-        // ── SWAP THIS LINK for your real Google Play / APK URL before going live ──
-        // eslint-disable-next-line no-undef
-        /* ADJOE_DOWNLOAD_URL — replace https://google.com with your Play Store listing */
-        <a
-          href="https://google.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ textDecoration: 'none', display: 'block' }}
-        >
+        <div style={{
+          background: 'rgba(139,92,246,0.09)',
+          border: '1.5px solid rgba(139,92,246,0.4)',
+          borderRadius: 12, padding: '14px 16px',
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}>
+          {/* Clock icon */}
           <div style={{
-            background: 'rgba(139,92,246,0.09)',
-            border: '1.5px solid rgba(139,92,246,0.4)',
-            borderRadius: 12, padding: '14px 16px',
-            display: 'flex', alignItems: 'center', gap: 14,
-            cursor: 'pointer',
-            transition: 'background 0.18s, border-color 0.18s',
-          }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(139,92,246,0.16)';
-              e.currentTarget.style.borderColor = 'rgba(139,92,246,0.65)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(139,92,246,0.09)';
-              e.currentTarget.style.borderColor = 'rgba(139,92,246,0.4)';
-            }}
-          >
-            {/* Google Play icon */}
-            <div style={{
-              width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-              background: 'rgba(139,92,246,0.15)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M3 20.5v-17c0-.83 1-.83 1.5-.5l15 8.5-15 8.5c-.5.33-1.5.33-1.5-.5z" fill={wall.color} />
-              </svg>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontWeight: 700, fontSize: 13, color: wall.color, marginBottom: 3 }}>
-                Download on Google Play
-              </p>
-              <p style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.5 }}>
-                Get the Spetro Earn app to unlock adjoe Playtime rewards.
-              </p>
-            </div>
-            {/* Right arrow */}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke={wall.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.7 }}>
-              <path d="M9 18l6-6-6-6"/>
+            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+            background: 'rgba(139,92,246,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke={wall.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3 2" />
             </svg>
           </div>
-        </a>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontWeight: 700, fontSize: 14, color: wall.color, marginBottom: 3 }}>
+              Soon
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.5 }}>
+              adjoe Playtime rewards will be available soon.
+            </p>
+          </div>
+        </div>
       ) : (
         <button
           className="btn btn-primary"

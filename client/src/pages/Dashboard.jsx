@@ -430,6 +430,45 @@ function TxRow({ tx }) {
   );
 }
 
+// ── Telegram banner ───────────────────────────────────────────────────────────
+function TelegramBanner() {
+  return (
+    <a
+      href="https://t.me"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14,
+        background: 'linear-gradient(135deg, #0a2a44, #0a1f33)',
+        border: '1px solid rgba(34,158,217,0.35)',
+        borderRadius: 16, padding: '16px 18px', marginBottom: 16,
+      }}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+        background: 'rgba(34,158,217,0.18)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#229ED9">
+          <path d="M21.95 4.32 18.7 19.66c-.24 1.08-.88 1.35-1.78.84l-4.92-3.63-2.37 2.28c-.26.26-.48.48-.99.48l.35-5.02 9.13-8.25c.4-.35-.09-.55-.62-.2L5.2 13.04l-4.86-1.52c-1.06-.33-1.08-1.06.22-1.57L20.58 2.8c.88-.33 1.65.2 1.37 1.52Z"/>
+        </svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
+          Follow us on Telegram
+        </p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.5 }}>
+          Join our channel for news, payout proofs, and bonus drops.
+        </p>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="#229ED9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.8 }}>
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </a>
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoLogin, onGoRegister }) {
   const toast = useToast();
@@ -532,32 +571,40 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
 
       {showPushBanner && <PushBanner onDismiss={dismissPush} />}
 
-      <BalanceCard
-        coins={user?.coins || 0}
-        onEarn={() => onNavigate('offerwalls')}
-        onWithdraw={() => onNavigate('withdraw')}
-      />
+      <div className="dash-grid">
+        <div className="dash-col">
+          <BalanceCard
+            coins={user?.coins || 0}
+            onEarn={() => onNavigate('offerwalls')}
+            onWithdraw={() => onNavigate('withdraw')}
+          />
 
-      <WeekStreak
-        streak={user?.checkin_streak || 0}
-        lastCheckin={user?.last_checkin}
-        onClaim={claimDaily}
-        loading={claimingDaily}
-      />
+          <TelegramBanner />
+        </div>
 
-      <div>
-        <p className="section-title">Recent Activity</p>
-        {transactions.length === 0 ? (
-          <div className="empty-state">
-            <CoinIcon size={60} />
-            <p style={{ marginTop: 12, fontWeight: 600 }}>No transactions yet</p>
-            <p style={{ fontSize: 13, marginTop: 4 }}>Start earning by completing offers</p>
+        <div className="dash-col">
+          <WeekStreak
+            streak={user?.checkin_streak || 0}
+            lastCheckin={user?.last_checkin}
+            onClaim={claimDaily}
+            loading={claimingDaily}
+          />
+
+          <div>
+            <p className="section-title">Recent Activity</p>
+            {transactions.length === 0 ? (
+              <div className="empty-state">
+                <CoinIcon size={60} />
+                <p style={{ marginTop: 12, fontWeight: 600 }}>No transactions yet</p>
+                <p style={{ fontSize: 13, marginTop: 4 }}>Start earning by completing offers</p>
+              </div>
+            ) : (
+              <div className="card" style={{ padding: '0 18px' }}>
+                {transactions.slice(0, 10).map((tx) => <TxRow key={tx.id} tx={tx} />)}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="card" style={{ padding: '0 18px' }}>
-            {transactions.slice(0, 10).map((tx) => <TxRow key={tx.id} tx={tx} />)}
-          </div>
-        )}
+        </div>
       </div>
 
     </div>
