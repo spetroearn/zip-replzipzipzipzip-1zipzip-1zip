@@ -13,7 +13,7 @@ import ResetPassword from './pages/ResetPassword';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import { api } from './api';
-import { SpetroMark } from './components/Icons';
+import { SpetroMark, XIcon } from './components/Icons';
 
 function AppInner() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
@@ -24,7 +24,7 @@ function AppInner() {
 
   const [authState, setAuthState] = useState('loading');
   const [user, setUser] = useState(null);
-  const [authScreen, setAuthScreen] = useState('login');
+  const [authModal, setAuthModal] = useState(null); // null | 'login' | 'register'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [prevTab, setPrevTab] = useState('dashboard');
 
@@ -50,8 +50,8 @@ function AppInner() {
         token={resetToken}
         onDone={() => {
           window.history.replaceState({}, '', '/');
-          setAuthState('auth');
-          setAuthScreen('login');
+          setAuthState('guest');
+          setAuthModal('login');
         }}
       />
     );
@@ -65,25 +65,15 @@ function AppInner() {
 
   if (authState === 'loading') return <LoadingScreen />;
 
-  if (authState === 'auth') {
-    if (authScreen === 'register') {
-      return (
-        <Register
-          onLogin={(u) => { setUser(u); setAuthState('app'); setActiveTab('dashboard'); }}
-          onGoLogin={() => setAuthScreen('login')}
-        />
-      );
-    }
-    return (
-      <Login
-        onLogin={(u) => { setUser(u); setAuthState('app'); setActiveTab('dashboard'); }}
-        onGoRegister={() => setAuthScreen('register')}
-      />
-    );
-  }
-
-  const goToLogin = () => { setAuthScreen('login'); setAuthState('auth'); };
-  const goToRegister = () => { setAuthScreen('register'); setAuthState('auth'); };
+  const goToLogin = () => setAuthModal('login');
+  const goToRegister = () => setAuthModal('register');
+  const closeAuthModal = () => setAuthModal(null);
+  const handleAuthSuccess = (u) => {
+    setUser(u);
+    setAuthState('app');
+    setActiveTab('dashboard');
+    setAuthModal(null);
+  };
 
   const handleTabChange = (tab) => {
     setPrevTab(activeTab);
@@ -130,6 +120,34 @@ function AppInner() {
       <Footer />
       <BottomNav active={activeTab} onChange={handleTabChange} guest={isGuest} />
       <CookieConsent />
+
+      {authModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1500,
+            background: 'var(--bg)', overflowY: 'auto',
+          }}
+        >
+          <button
+            onClick={closeAuthModal}
+            aria-label="Close"
+            style={{
+              position: 'fixed', top: 16, right: 16, zIndex: 1600,
+              width: 40, height: 40, borderRadius: '50%',
+              background: 'var(--bg-card2)', border: '1px solid var(--border-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'var(--text)',
+            }}
+          >
+            <XIcon size={20} style={{ stroke: 'var(--text)' }} />
+          </button>
+          {authModal === 'register' ? (
+            <Register onLogin={handleAuthSuccess} onGoLogin={() => setAuthModal('login')} />
+          ) : (
+            <Login onLogin={handleAuthSuccess} onGoRegister={() => setAuthModal('register')} />
+          )}
+        </div>
+      )}
     </div>
   );
 }
