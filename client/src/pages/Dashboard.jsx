@@ -292,8 +292,8 @@ function GuestLanding({ onGoLogin, onGoRegister }) {
       {/* Locked top offers */}
       <LockedTopOffers onUnlock={onGoRegister} />
 
-      {/* Partner offerwalls */}
-      <PartnerOfferwalls />
+      {/* Partner offerwalls — temporarily hidden (restore by uncommenting) */}
+      {/* <PartnerOfferwalls /> */}
 
       {/* Locked balance preview */}
       <div style={{ position: 'relative', marginBottom: 18 }}>
