@@ -167,14 +167,18 @@ function PartnerOfferwalls() {
     { logo: '/logos/adtowall.png', name: 'AdToWall' },
     { logo: '/logos/taskwall.png', name: 'TaskWall' },
     { logo: '/logos/torox.svg', name: 'Torox' },
-    { logo: '/logos/mychips.svg', name: 'MyChips' },
+    { logo: '/logos/mychips.png', name: 'MyChips', light: true },
   ];
   return (
     <>
       <p className="section-title">Our Offerwalls</p>
       <div className="partner-grid">
         {PARTNERS.map((p) => (
-          <div key={p.name} className="partner-cell">
+          <div
+            key={p.name}
+            className="partner-cell"
+            style={p.light ? { background: '#fff', borderColor: 'rgba(255,255,255,0.18)' } : undefined}
+          >
             <img src={p.logo} alt={p.name} />
           </div>
         ))}

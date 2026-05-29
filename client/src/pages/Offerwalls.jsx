@@ -101,7 +101,9 @@ const WALLS = [
     bg: 'linear-gradient(145deg, #141000, #221a00)',
     borderColor: 'rgba(245,196,0,0.3)',
     featured: false,
-    logo: '/logos/mychips.svg',
+    logo: '/logos/mychips.png',
+    logoBg: '#ffffff',
+    logoScale: 1.15,
     url: 'https://mychips.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
   }
 ];
@@ -397,12 +399,12 @@ function WallCard({ wall, vpnBlocked, levelBlocked, userId, onOpenModal }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 10 }}>
         <div style={{
           width: 72, height: 56, borderRadius: 14,
-          background: `${wall.color}1a`,
+          background: wall.logoBg || `${wall.color}1a`,
           border: `1.5px solid ${wall.color}44`,
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           overflow: 'hidden',
           transition: 'background 0.2s, border-color 0.2s',
-          ...(hovered && !isLocked ? { background: `${wall.color}28`, borderColor: `${wall.color}77` } : {})
+          ...(hovered && !isLocked && !wall.logoBg ? { background: `${wall.color}28`, borderColor: `${wall.color}77` } : {})
         }}>
           {!imgError ? (
             <img
