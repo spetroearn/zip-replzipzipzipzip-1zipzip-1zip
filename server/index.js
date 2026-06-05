@@ -15,6 +15,7 @@ const adminRoutes = require('./routes/admin');
 const withdrawRoutes = require('./routes/withdraw');
 const postbackRoutes = require('./routes/postback');
 const ticketRoutes = require('./routes/tickets');
+const offersRoutes = require('./routes/offers');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -68,6 +69,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/withdraw', withdrawRoutes);
 app.use('/api/postback', postbackRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/offers', offersRoutes);
 
 // Hashed assets (JS/CSS) — cache forever; index.html — never cache
 app.use(express.static(path.join(__dirname, 'public'), {

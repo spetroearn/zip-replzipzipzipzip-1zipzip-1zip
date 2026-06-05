@@ -271,6 +271,67 @@ router.put('/offerwall-config', requireAdmin, async (req, res) => {
   }
 });
 
+// ── Direct Offers CRUD ────────────────────────────────────────────────────────
+router.get('/direct-offers', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, title, description, image_url, tracking_link, points, active, created_at FROM direct_offers ORDER BY created_at DESC'
+    );
+    return res.json({ offers: result.rows });
+  } catch (err) {
+    console.error('Direct offers GET error:', err);
+    return res.status(500).json({ error: 'Failed to load offers.' });
+  }
+});
+
+router.post('/direct-offers', requireAdmin, async (req, res) => {
+  const { title, description, image_url, tracking_link, points } = req.body;
+  if (!title || !title.trim()) return res.status(400).json({ error: 'Title is required.' });
+  if (!tracking_link || !tracking_link.trim()) return res.status(400).json({ error: 'Tracking link is required.' });
+  try {
+    const result = await pool.query(
+      `INSERT INTO direct_offers (title, description, image_url, tracking_link, points)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [title.trim(), (description || '').trim(), (image_url || '').trim(), tracking_link.trim(), parseInt(points) || 0]
+    );
+    return res.json({ offer: result.rows[0] });
+  } catch (err) {
+    console.error('Direct offer POST error:', err);
+    return res.status(500).json({ error: 'Failed to create offer.' });
+  }
+});
+
+router.put('/direct-offers/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { title, description, image_url, tracking_link, points, active } = req.body;
+  if (!title || !title.trim()) return res.status(400).json({ error: 'Title is required.' });
+  if (!tracking_link || !tracking_link.trim()) return res.status(400).json({ error: 'Tracking link is required.' });
+  try {
+    const result = await pool.query(
+      `UPDATE direct_offers
+       SET title = $1, description = $2, image_url = $3, tracking_link = $4, points = $5, active = $6
+       WHERE id = $7 RETURNING *`,
+      [title.trim(), (description || '').trim(), (image_url || '').trim(), tracking_link.trim(), parseInt(points) || 0, active !== false, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Offer not found.' });
+    return res.json({ offer: result.rows[0] });
+  } catch (err) {
+    console.error('Direct offer PUT error:', err);
+    return res.status(500).json({ error: 'Failed to update offer.' });
+  }
+});
+
+router.delete('/direct-offers/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM direct_offers WHERE id = $1', [id]);
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Direct offer DELETE error:', err);
+    return res.status(500).json({ error: 'Failed to delete offer.' });
+  }
+});
+
 // Ban / unban user
 router.patch('/users/:id/status', requireAdmin, async (req, res) => {
   const { id } = req.params;

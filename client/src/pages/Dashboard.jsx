@@ -601,6 +601,83 @@ function TrustpilotBanner() {
   );
 }
 
+// ── Featured Premium Offers ────────────────────────────────────────────────────
+function FeaturedOffers({ user }) {
+  const [offers, setOffers] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    api.offers.list()
+      .then((d) => setOffers(d.offers || []))
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, []);
+
+  if (!loaded || offers.length === 0) return null;
+
+  const handleComplete = (offer) => {
+    const uid = user?.uid || '';
+    const sep = offer.tracking_link.includes('?') ? '&' : '?';
+    const url = `${offer.tracking_link}${sep}sub2=${uid}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p className="section-title" style={{ margin: 0 }}>Featured Premium Offers</p>
+        <span style={{
+          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: 'var(--coin)', background: 'rgba(245,158,11,0.12)',
+          border: '1px solid rgba(245,158,11,0.28)', borderRadius: 7, padding: '3px 9px'
+        }}>Premium</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {offers.map((offer) => (
+          <div key={offer.id} style={{
+            background: 'linear-gradient(145deg, #0c1e32, #091525)',
+            border: '1px solid rgba(14,165,233,0.18)',
+            borderRadius: 16, overflow: 'hidden',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.18)'
+          }}>
+            {offer.image_url && (
+              <img
+                src={offer.image_url}
+                alt={offer.title}
+                style={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            )}
+            <div style={{ padding: '14px 16px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 7 }}>
+                <p style={{ fontWeight: 800, fontSize: 15, color: 'var(--text)', lineHeight: 1.3 }}>{offer.title}</p>
+                <span style={{
+                  fontWeight: 800, fontSize: 12, color: 'var(--coin)',
+                  background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)',
+                  borderRadius: 8, padding: '3px 10px', whiteSpace: 'nowrap', flexShrink: 0
+                }}>
+                  +{offer.points} SC
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
+                {offer.description}
+              </p>
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center', gap: 8, fontWeight: 700 }}
+                onClick={() => handleComplete(offer)}
+              >
+                <ZapIcon size={15} style={{ stroke: '#fff' }} />
+                Complete Offer — Earn {offer.points} SC
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoLogin, onGoRegister }) {
   const toast = useToast();
@@ -717,6 +794,8 @@ export default function Dashboard({ user, guest, onUserUpdate, onNavigate, onGoL
             onClaim={claimDaily}
             loading={claimingDaily}
           />
+
+          <FeaturedOffers user={user} />
 
           <TelegramBanner />
           <YouTubeBanner />

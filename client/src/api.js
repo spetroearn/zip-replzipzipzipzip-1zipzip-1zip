@@ -40,6 +40,9 @@ export const api = {
   offerwalls: {
     config: () => request('/offerwalls/config')
   },
+  offers: {
+    list: () => request('/offers')
+  },
   admin: {
     login: (body) => request('/admin/login', { method: 'POST', body: JSON.stringify(body) }),
     logout: () => request('/admin/logout', { method: 'POST' }),
@@ -57,6 +60,10 @@ export const api = {
     ticketReply: (id, message, status) => request(`/admin/tickets/${id}/reply`, { method: 'POST', body: JSON.stringify({ message, status }) }),
     ticketStatus: (id, status) => request(`/admin/tickets/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     offerwallConfig: () => request('/admin/offerwall-config'),
-    saveOfferwallConfig: (config) => request('/admin/offerwall-config', { method: 'PUT', body: JSON.stringify({ config }) })
+    saveOfferwallConfig: (config) => request('/admin/offerwall-config', { method: 'PUT', body: JSON.stringify({ config }) }),
+    directOffers: () => request('/admin/direct-offers'),
+    createDirectOffer: (body) => request('/admin/direct-offers', { method: 'POST', body: JSON.stringify(body) }),
+    updateDirectOffer: (id, body) => request(`/admin/direct-offers/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    deleteDirectOffer: (id) => request(`/admin/direct-offers/${id}`, { method: 'DELETE' })
   }
 };

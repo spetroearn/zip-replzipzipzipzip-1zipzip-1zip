@@ -156,6 +156,11 @@ export default function AdminDashboard({ admin, onLogout }) {
   const [ticketReplyLoading, setTicketReplyLoading] = useState(false);
   const [owConfig, setOwConfig] = useState([]);
   const [owSaving, setOwSaving] = useState(false);
+  const [directOffers, setDirectOffers] = useState([]);
+  const [offerForm, setOfferForm] = useState({ title: '', description: '', image_url: '', tracking_link: '', points: '' });
+  const [offerEditId, setOfferEditId] = useState(null);
+  const [offerSaving, setOfferSaving] = useState(false);
+  const [offerDeleting, setOfferDeleting] = useState(null);
 
   useEffect(() => { api.admin.stats().then(setStats).catch(() => {}); }, []);
   useEffect(() => {
@@ -164,6 +169,7 @@ export default function AdminDashboard({ admin, onLogout }) {
     if (tab === 'postbacks') api.admin.postbackLogs().then((d) => setPostbackLogs(d.logs)).catch(() => {});
     if (tab === 'tickets') api.admin.tickets().then((d) => setTickets(d.tickets)).catch(() => {});
     if (tab === 'offerwalls') api.admin.offerwallConfig().then((d) => setOwConfig(d.config)).catch(() => {});
+    if (tab === 'offers') api.admin.directOffers().then((d) => setDirectOffers(d.offers)).catch(() => {});
   }, [tab]);
 
   const saveOwConfig = async () => {
@@ -184,6 +190,57 @@ export default function AdminDashboard({ admin, onLogout }) {
         entry.network_id === network_id ? { ...entry, [field]: value } : entry
       )
     );
+  };
+
+  const resetOfferForm = () => {
+    setOfferForm({ title: '', description: '', image_url: '', tracking_link: '', points: '' });
+    setOfferEditId(null);
+  };
+
+  const loadDirectOffers = () =>
+    api.admin.directOffers().then((d) => setDirectOffers(d.offers)).catch(() => {});
+
+  const submitOffer = async (e) => {
+    e.preventDefault();
+    setOfferSaving(true);
+    try {
+      const body = { ...offerForm, points: parseInt(offerForm.points) || 0 };
+      if (offerEditId) {
+        await api.admin.updateDirectOffer(offerEditId, body);
+        toast.success('Offer updated.');
+      } else {
+        await api.admin.createDirectOffer(body);
+        toast.success('Offer created.');
+      }
+      resetOfferForm();
+      await loadDirectOffers();
+    } catch (err) { toast.error(err.message); }
+    finally { setOfferSaving(false); }
+  };
+
+  const deleteOffer = async (id) => {
+    if (!window.confirm('Delete this offer? This cannot be undone.')) return;
+    setOfferDeleting(id);
+    try {
+      await api.admin.deleteDirectOffer(id);
+      setDirectOffers((prev) => prev.filter((o) => o.id !== id));
+      if (offerEditId === id) resetOfferForm();
+      toast.success('Offer deleted.');
+    } catch (err) { toast.error(err.message); }
+    finally { setOfferDeleting(null); }
+  };
+
+  const editOffer = (offer) => {
+    setOfferEditId(offer.id);
+    setOfferForm({
+      title: offer.title,
+      description: offer.description,
+      image_url: offer.image_url || '',
+      tracking_link: offer.tracking_link,
+      points: String(offer.points),
+      active: offer.active
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const openTicketDetail = async (t) => {
@@ -280,7 +337,7 @@ export default function AdminDashboard({ admin, onLogout }) {
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)', overflowX: 'auto' }}>
-        {['overview', 'users', 'withdrawals', 'tickets', 'postbacks', 'offerwalls'].map((t) => (
+        {['overview', 'users', 'withdrawals', 'tickets', 'postbacks', 'offerwalls', 'offers'].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -663,6 +720,157 @@ export default function AdminDashboard({ admin, onLogout }) {
                         ⚠ URL doesn't contain <code style={{ fontSize: 11 }}>{'{USER_ID}'}</code> — users won't be tracked correctly.
                       </p>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Direct Offers Management */}
+        {tab === 'offers' && (
+          <div>
+            <div style={{ marginBottom: 24 }}>
+              <h2 style={{ fontWeight: 700, fontSize: 20, marginBottom: 4 }}>
+                {offerEditId ? 'Edit Offer' : 'Add New Offer'}
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                Offers appear in the "Featured Premium Offers" section on the user dashboard.
+              </p>
+            </div>
+
+            <form onSubmit={submitOffer}>
+              <div className="card" style={{ padding: '20px 22px', marginBottom: 24 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="input-group" style={{ margin: 0 }}>
+                    <label>Title *</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Coin Master"
+                      value={offerForm.title}
+                      onChange={(e) => setOfferForm({ ...offerForm, title: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="input-group" style={{ margin: 0 }}>
+                    <label>Description *</label>
+                    <textarea
+                      placeholder="Describe what the user needs to do to earn the reward..."
+                      value={offerForm.description}
+                      onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
+                      rows={3}
+                      required
+                      style={{ width: '100%', background: 'var(--bg-card2)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '10px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box', lineHeight: 1.6 }}
+                    />
+                  </div>
+                  <div className="input-group" style={{ margin: 0 }}>
+                    <label>Image URL</label>
+                    <input
+                      type="url"
+                      placeholder="https://i.imgur.com/example.png"
+                      value={offerForm.image_url}
+                      onChange={(e) => setOfferForm({ ...offerForm, image_url: e.target.value })}
+                    />
+                  </div>
+                  <div className="input-group" style={{ margin: 0 }}>
+                    <label>Tracking Link *</label>
+                    <input
+                      type="url"
+                      placeholder="https://your-network.com/offer/ABC"
+                      value={offerForm.tracking_link}
+                      onChange={(e) => setOfferForm({ ...offerForm, tracking_link: e.target.value })}
+                      required
+                    />
+                    <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 5 }}>
+                      The user's UID will be appended automatically as <code style={{ background: 'rgba(14,165,233,0.1)', color: 'var(--primary)', borderRadius: 4, padding: '1px 6px' }}>&amp;sub2=UID</code>
+                    </p>
+                  </div>
+                  <div className="input-group" style={{ margin: 0 }}>
+                    <label>Point Reward (SC) *</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 50"
+                      min="1"
+                      value={offerForm.points}
+                      onChange={(e) => setOfferForm({ ...offerForm, points: e.target.value })}
+                      required
+                    />
+                  </div>
+                  {offerForm.image_url && (
+                    <div>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, fontWeight: 600 }}>Image Preview:</p>
+                      <img
+                        src={offerForm.image_url}
+                        alt="preview"
+                        style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 10, border: '1px solid var(--border)' }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 10, paddingTop: 4 }}>
+                    {offerEditId && (
+                      <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={resetOfferForm}>
+                        Cancel Edit
+                      </button>
+                    )}
+                    <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={offerSaving}>
+                      {offerSaving ? <span className="spinner" /> : offerEditId ? 'Update Offer' : 'Add Offer'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 17 }}>All Offers ({directOffers.length})</h3>
+              <button className="btn btn-secondary" style={{ padding: '7px 14px', fontSize: 13 }} onClick={loadDirectOffers}>Refresh</button>
+            </div>
+
+            {directOffers.length === 0 ? (
+              <div className="empty-state" style={{ padding: '36px 0' }}>
+                <ZapIcon size={38} style={{ stroke: 'var(--text-dim)' }} />
+                <p style={{ marginTop: 12 }}>No offers yet. Add one above.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {directOffers.map((offer) => (
+                  <div key={offer.id} className="card" style={{ padding: 0, overflow: 'hidden', border: offerEditId === offer.id ? '1.5px solid var(--primary)' : '1px solid var(--border)' }}>
+                    {offer.image_url && (
+                      <img src={offer.image_url} alt={offer.title} style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                    )}
+                    <div style={{ padding: '14px 18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
+                            <p style={{ fontWeight: 700, fontSize: 15 }}>{offer.title}</p>
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5, background: offer.active ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)', color: offer.active ? 'var(--success)' : 'var(--error)' }}>
+                              {offer.active ? 'ACTIVE' : 'HIDDEN'}
+                            </span>
+                          </div>
+                          <p style={{ color: 'var(--text-muted)', fontSize: 13, lineHeight: 1.5, marginBottom: 4 }}>{offer.description}</p>
+                          <p style={{ color: 'var(--text-dim)', fontSize: 12, wordBreak: 'break-all' }}>{offer.tracking_link}</p>
+                        </div>
+                        <span style={{ fontWeight: 800, fontSize: 14, color: 'var(--coin)', whiteSpace: 'nowrap', flexShrink: 0 }}>+{offer.points} SC</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                        <button
+                          className="btn btn-secondary"
+                          style={{ flex: 1, fontSize: 13 }}
+                          onClick={() => editOffer(offer)}
+                          disabled={offerEditId === offer.id}
+                        >
+                          {offerEditId === offer.id ? 'Editing...' : 'Edit'}
+                        </button>
+                        <button
+                          className="btn"
+                          style={{ flex: 1, fontSize: 13, background: 'rgba(239,68,68,0.15)', color: 'var(--error)', borderRadius: 8 }}
+                          onClick={() => deleteOffer(offer.id)}
+                          disabled={offerDeleting === offer.id}
+                        >
+                          {offerDeleting === offer.id ? <span className="spinner" style={{ width: 14, height: 14 }} /> : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

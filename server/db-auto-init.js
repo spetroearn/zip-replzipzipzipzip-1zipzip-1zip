@@ -86,6 +86,17 @@ const SCHEMA_SQL = `
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
   );
+
+  CREATE TABLE IF NOT EXISTS direct_offers (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL,
+    image_url TEXT NOT NULL DEFAULT '',
+    tracking_link TEXT NOT NULL,
+    points INTEGER NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  );
 `;
 
 const OFFERWALL_NETWORKS = [
@@ -125,6 +136,14 @@ async function autoInit() {
       );
       console.log('[DB] Default admin account created (admin / admin123) — change this in production!');
     }
+
+    await client.query(`
+      INSERT INTO direct_offers (title, description, image_url, tracking_link, points)
+      SELECT 'Coin Master', 'Download, open the game, and complete Village 7 to earn your reward!',
+             'https://i.imgur.com/jNNT4LE.png',
+             'https://www.adtogametrkk.com/FS6MH5T/29X4MBNJ/', 50
+      WHERE NOT EXISTS (SELECT 1 FROM direct_offers WHERE title = 'Coin Master')
+    `);
 
     console.log('[DB] Auto-init complete. All tables ready.');
   } catch (err) {
