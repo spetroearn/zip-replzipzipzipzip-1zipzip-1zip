@@ -117,10 +117,10 @@ function PushBanner({ onDismiss }) {
 // ── Locked top offers (guest) ──────────────────────────────────────────────────
 function LockedTopOffers({ onUnlock }) {
   const OFFERS = [
-    { logo: '/logos/coinmaster.png', name: 'Coin Master', task: 'Reach Village 3 to Earn', reward: '+1,200' },
-    { logo: '/logos/tiktok.png', name: 'TikTok', task: 'Install & Watch Videos for 10 Mins to Earn', reward: '+800' },
-    { logo: '/logos/monopolygo.jpg', name: 'Monopoly GO', task: 'Reach Board 5 to Earn', reward: '+2,500' },
-    { logo: '/logos/riseofkingdoms.png', name: 'Rise of Kingdoms', task: 'Upgrade City Hall to Level 10 to Earn', reward: '+5,000' },
+    { logo: '/logos/justgames.png',  name: 'Just Games',               task: 'Register & Complete 3 Games to Earn',    reward: '+2,400' },
+    { logo: '/logos/testerup.png',   name: 'testerup',                  task: 'Register & Test Your First App to Earn', reward: '+3,000' },
+    { logo: '/logos/justplay.png',   name: 'JustPlay',                  task: 'Install & Reach Level 5 to Earn',        reward: '+1,000' },
+    { logo: '/logos/ratehfw.png',    name: 'Rate: Home & Finance',      task: 'Complete Your First Survey to Earn',     reward: '+500'   },
   ];
   return (
     <>

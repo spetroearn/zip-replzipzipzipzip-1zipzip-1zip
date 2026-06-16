@@ -89,7 +89,7 @@ const SCHEMA_SQL = `
 
   CREATE TABLE IF NOT EXISTS direct_offers (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
+    title VARCHAR(200) UNIQUE NOT NULL,
     description TEXT NOT NULL,
     image_url TEXT NOT NULL DEFAULT '',
     tracking_link TEXT NOT NULL,
@@ -137,13 +137,20 @@ async function autoInit() {
       console.log('[DB] Default admin account created (admin / admin123) — change this in production!');
     }
 
-    await client.query(`
-      INSERT INTO direct_offers (title, description, image_url, tracking_link, points)
-      SELECT 'Coin Master', 'Download, open the game, and complete Village 7 to earn your reward!',
-             'https://i.imgur.com/jNNT4LE.png',
-             'https://www.adtogametrkk.com/FS6MH5T/29X4MBNJ/', 50
-      WHERE NOT EXISTS (SELECT 1 FROM direct_offers WHERE title = 'Coin Master')
-    `);
+    const defaultOffers = [
+      { title: 'Just Games [UK]',                    description: 'Register and complete 3 games to earn your reward!',              image: 'https://play-lh.googleusercontent.com/lpjvwbdxujZrDY3GIVA2JcJiyz7YeaOYK9ONV5OeiGR9EW0OKHa-CU6CRkI0RbFsCI3UOSzdxmbbk7zDVnjVRg=w512-h512-rw', link: 'https://www.adtogametrkk.com/FS6MH5T/2B2Q1SDT/', points: 2400 },
+      { title: 'testerup [US/UK/CA]',                description: 'Register and test your first mobile app to earn your reward!',    image: 'https://play-lh.googleusercontent.com/CG3vTGUNaGhj2WqUWYZTSzWDrmjImnH-StVlCVFWMbyNWE9tK9HGj7vMSXUq0ZSCBvbw06apZJPsT24omg7ZSg=w512-h512-rw', link: 'https://www.adtogametrkk.com/FS6MH5T/2B2XKCC9/', points: 3000 },
+      { title: 'JustPlay [US]',                      description: 'Install JustPlay and reach Level 5 in any game to earn your reward!', image: 'https://play-lh.googleusercontent.com/rCfVtIUrnY_YE0d5GNnRh8KOad-LBZUFt6gOPWR7c6QyXa28wXTmelrZpwd8gkXfAIoaCbwW4DdBZmguDLkg0w=w512-h512-rw', link: 'https://www.adtogametrkk.com/FS6MH5T/2B539C1D/', points: 1000 },
+      { title: 'Rate: Home, Finance & Wellness [US]', description: 'Download the app and complete your first survey to earn your reward!', image: 'https://play-lh.googleusercontent.com/sbYhIWq96kE2DiAD2qtywGT1S468HCFfp0HbkgTi6jGNfAKInFDDQ360_dVlBYv7Ww=w512-h512-rw', link: 'https://www.adtogametrkk.com/FS6MH5T/29TSJCJQ/', points: 500 },
+    ];
+    for (const o of defaultOffers) {
+      await client.query(
+        `INSERT INTO direct_offers (title, description, image_url, tracking_link, points)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT DO NOTHING`,
+        [o.title, o.description, o.image, o.link, o.points]
+      );
+    }
 
     console.log('[DB] Auto-init complete. All tables ready.');
   } catch (err) {
