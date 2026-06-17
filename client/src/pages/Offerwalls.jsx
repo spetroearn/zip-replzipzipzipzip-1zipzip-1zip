@@ -78,7 +78,7 @@ const WALLS = [
     borderColor: 'rgba(43,108,176,0.32)',
     featured: false,
     logo: '/logos/taskwall.png',
-    url: 'https://taskwall.io/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
+    url: 'https://wall.taskwall.io/?app_id=10889467703bb0ea255abfe901662a50&userid={USER_ID}'
   },
   {
     id: 'torox',

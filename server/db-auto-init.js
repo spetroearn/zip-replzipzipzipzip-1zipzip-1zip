@@ -105,7 +105,7 @@ const OFFERWALL_NETWORKS = [
   { network_id: 'offery',   name: 'Offery' },
   { network_id: 'ovnix',    name: 'Ovnix' },
   { network_id: 'adtowall', name: 'AdToWall' },
-  { network_id: 'taskwall', name: 'TaskWall' },
+  { network_id: 'taskwall', name: 'TaskWall', url: 'https://wall.taskwall.io/?app_id=10889467703bb0ea255abfe901662a50&userid={USER_ID}' },
 ];
 
 async function autoInit() {
@@ -118,9 +118,11 @@ async function autoInit() {
     for (const nw of OFFERWALL_NETWORKS) {
       await client.query(
         `INSERT INTO offerwall_config (network_id, name, url, enabled)
-         VALUES ($1, $2, '', true)
-         ON CONFLICT (network_id) DO NOTHING`,
-        [nw.network_id, nw.name]
+         VALUES ($1, $2, $3, true)
+         ON CONFLICT (network_id) DO UPDATE
+           SET url = EXCLUDED.url
+           WHERE offerwall_config.url = ''`,
+        [nw.network_id, nw.name, nw.url || '']
       );
     }
 
