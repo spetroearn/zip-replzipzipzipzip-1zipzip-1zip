@@ -154,7 +154,14 @@ export default function Login({ onLogin, onGoRegister }) {
 
   const signInWithGoogle = () => {
     if (!termsAccepted) return;
-    window.location.href = '/api/auth/google';
+    // In-app WebView: Google blocks OAuth in embedded browsers.
+    // Open via Android Intent (Chrome) so OAuth works, then App Links
+    // redirect back to the app after the callback.
+    if (window.AndroidBridge && window.AndroidBridge.openUrl) {
+      window.AndroidBridge.openUrl('https://spetroearn.com/api/auth/google');
+    } else {
+      window.location.href = '/api/auth/google';
+    }
   };
 
   const linkStyle = {
