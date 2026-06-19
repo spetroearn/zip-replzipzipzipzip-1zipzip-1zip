@@ -158,7 +158,7 @@ export default function Login({ onLogin, onGoRegister }) {
     // Open via Android Intent (Chrome) so OAuth works, then App Links
     // redirect back to the app after the callback.
     if (window.AndroidBridge && window.AndroidBridge.openUrl) {
-      window.AndroidBridge.openUrl('https://spetroearn.com/api/auth/google');
+      window.AndroidBridge.openUrl('https://spetroearn.com/api/auth/google?from_app=1');
     } else {
       window.location.href = '/api/auth/google';
     }
