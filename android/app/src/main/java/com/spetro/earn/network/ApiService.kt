@@ -22,9 +22,6 @@ interface ApiService {
     @POST("api/coins/claim/daily")
     suspend fun claimDaily(): Response<DailyResponse>
 
-    @POST("api/coins/claim/welcome")
-    suspend fun claimWelcome(): Response<ClaimResponse>
-
     @GET("api/coins/history")
     suspend fun coinHistory(): Response<HistoryResponse>
 
