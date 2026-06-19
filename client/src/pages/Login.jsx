@@ -154,11 +154,11 @@ export default function Login({ onLogin, onGoRegister }) {
 
   const signInWithGoogle = () => {
     if (!termsAccepted) return;
-    // In-app WebView: Google blocks OAuth in embedded browsers.
-    // Open via Android Intent (Chrome) so OAuth works, then App Links
-    // redirect back to the app after the callback.
-    if (window.AndroidBridge && window.AndroidBridge.openUrl) {
-      window.AndroidBridge.openUrl('https://spetroearn.com/api/auth/google?from_app=1');
+    if (window.AndroidBridge) {
+      // Use Chrome Custom Tabs — opens as an in-app browser overlay.
+      // After Google OAuth the server redirects to spetroearn://auth-complete
+      // which Chrome Custom Tabs intercepts and hands back to MainActivity.
+      window.AndroidBridge.openCustomTab('https://spetroearn.com/api/auth/google?from_app=1');
     } else {
       window.location.href = '/api/auth/google';
     }
