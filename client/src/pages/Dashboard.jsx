@@ -54,7 +54,11 @@ const PUSH_KEY = 'spetro_push_asked_at';
 const PUSH_RETRY_MS = 5 * 60 * 1000;
 
 function shouldShowPushBanner() {
-  if (window.AndroidBridge) return false; // native app — WebView doesn't support Web Push
+  // Native app: show banner if notification permission not yet granted
+  if (window.AndroidBridge) {
+    try { return !window.AndroidBridge.isNotificationGranted(); } catch (_) { return false; }
+  }
+  // Browser: use Web Notification API
   if (!('Notification' in window)) return false;
   if (Notification.permission !== 'default') return false;
   const last = localStorage.getItem(PUSH_KEY);
@@ -70,6 +74,13 @@ function PushBanner({ onDismiss }) {
   const requestPush = async () => {
     setAsking(true);
     try {
+      if (window.AndroidBridge) {
+        window.AndroidBridge.requestNotificationPermission();
+        toast.success('Notification permission requested — tap Allow when the system dialog appears.');
+        setTimeout(onDismiss, 800);
+        setAsking(false);
+        return;
+      }
       const perm = await Notification.requestPermission();
       if (perm === 'granted') {
         try { await api.auth.pushSubscribe(); } catch (_) {}
