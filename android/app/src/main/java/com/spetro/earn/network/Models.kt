@@ -8,25 +8,35 @@ data class UserDto(
     val name: String,
     val email: String,
     val coins: Int,
-    val xp: Int = 0,
-    @SerializedName("welcome_claimed") val welcomeClaimed: Boolean = false,
-    @SerializedName("created_at") val createdAt: String = ""
+    val uid: String? = null,
+    val country: String? = null,
+    @SerializedName("country_code") val countryCode: String? = null,
+    @SerializedName("checkin_streak") val checkinStreak: Int = 0,
+    @SerializedName("last_checkin") val lastCheckin: String? = null,
+    @SerializedName("welcome_bonus_claimed") val welcomeClaimed: Boolean = false,
+    @SerializedName("created_at") val createdAt: String = "",
+    @SerializedName("avatar_seed") val avatarSeed: Int = 1
 )
 
 data class AuthResponse(val user: UserDto)
+
 data class LoginRequest(val email: String, val password: String)
-data class RegisterRequest(val name: String, val email: String, val password: String)
+
+data class RegisterRequest(
+    val name: String,
+    val email: String,
+    val password: String,
+    @SerializedName("termsAccepted") val termsAccepted: Boolean = true,
+    @SerializedName("termsAcceptedAt") val termsAcceptedAt: String = "",
+    @SerializedName("deviceId") val deviceId: String? = null
+)
 
 // ── Coins ─────────────────────────────────────────────────────────────────────
 data class DailyResponse(
-    val coins: Int,
-    val streak: Int,
-    val message: String = ""
-)
-
-data class ClaimResponse(
-    val coins: Int,
-    val message: String = ""
+    val success: Boolean = false,
+    val message: String = "",
+    val coins: Int = 0,
+    @SerializedName("checkin_streak") val checkinStreak: Int = 0
 )
 
 data class Transaction(
@@ -45,7 +55,7 @@ data class OfferwallItem(
     val name: String,
     val enabled: Boolean,
     val url: String?,
-    val color: String = "#3b82f6"
+    @SerializedName("network_id") val networkId: String? = null
 )
 
 data class OfferwallConfigResponse(val walls: List<OfferwallItem>)
@@ -54,20 +64,20 @@ data class OfferwallConfigResponse(val walls: List<OfferwallItem>)
 data class WithdrawRequest(
     val method: String,
     val amount: Int,
-    val address: String
+    @SerializedName("wallet_address") val walletAddress: String
 )
 
 data class WithdrawalRecord(
     val id: Int,
     val method: String,
     val amount: Int,
-    val address: String,
+    @SerializedName("wallet_address") val walletAddress: String?,
     val status: String,
     @SerializedName("created_at") val createdAt: String
 )
 
 data class WithdrawalsResponse(val withdrawals: List<WithdrawalRecord>)
-data class WithdrawResponse(val message: String)
+data class WithdrawResponse(val message: String? = null, val success: Boolean = false)
 
-// ── Generic error ─────────────────────────────────────────────────────────────
+// ── Generic ───────────────────────────────────────────────────────────────────
 data class ApiError(val error: String)
