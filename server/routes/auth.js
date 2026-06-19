@@ -6,6 +6,16 @@ const pool = require('../db');
 const { checkIP, blockVPN } = require('../middleware/vpnCheck');
 const router = express.Router();
 
+// Temporary token store for Android app Google OAuth handoff
+// Maps token -> { userId, name, expires }
+const appOAuthTokens = new Map();
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of appOAuthTokens) {
+    if (v.expires < now) appOAuthTokens.delete(k);
+  }
+}, 60_000);
+
 function hashToken(token) {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -194,13 +204,20 @@ router.get('/google', (req, res) => {
     `${process.env.APP_URL || `https://${req.headers.host}`}/api/auth/google/callback`
   );
   const scope = encodeURIComponent('openid email profile');
-  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account`;
+  // Pass state=app so the callback knows to redirect back to the Android app
+  const state = req.query.from_app ? 'app' : 'web';
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account&state=${state}`;
   return res.redirect(url);
 });
 
 router.get('/google/callback', async (req, res) => {
-  const { code, error } = req.query;
-  if (error || !code) return res.redirect('/?error=google_cancelled');
+  const { code, error, state } = req.query;
+  const fromApp = state === 'app';
+  if (error || !code) {
+    return fromApp
+      ? res.redirect('spetroearn://auth-error?reason=google_cancelled')
+      : res.redirect('/?error=google_cancelled');
+  }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -266,15 +283,47 @@ router.get('/google/callback', async (req, res) => {
     }
 
     const user = userRow.rows[0];
-    if (user.status === 'banned') return res.redirect('/?error=account_banned');
+    if (user.status === 'banned') {
+      return fromApp
+        ? res.redirect('spetroearn://auth-error?reason=account_banned')
+        : res.redirect('/?error=account_banned');
+    }
 
     req.session.userId = user.id;
     req.session.name = user.name;
+    // If request came from the Android app:
+    // 1. Create a short-lived one-time token (5 min TTL)
+    // 2. Redirect to spetroearn:// custom scheme — Chrome hands off to the app
+    // 3. MainActivity loads /api/auth/app-signin?token=<token> in the WebView
+    //    which creates a proper WebView session and redirects to /
+    if (fromApp) {
+      const appToken = crypto.randomBytes(32).toString('hex');
+      appOAuthTokens.set(appToken, { userId: user.id, name: user.name, expires: Date.now() + 5 * 60_000 });
+      return res.redirect(`spetroearn://auth-complete?token=${appToken}`);
+    }
     return res.redirect('/');
   } catch (err) {
     console.error('Google OAuth error:', err.message);
-    return res.redirect('/?error=google_failed');
+    return fromApp
+      ? res.redirect('spetroearn://auth-error?reason=google_failed')
+      : res.redirect('/?error=google_failed');
   }
+});
+
+// ── Android App OAuth Token Exchange ─────────────────────────────────────────
+// Called by MainActivity after Chrome finishes Google OAuth.
+// Exchanges the one-time token for a real WebView session, then redirects to /.
+router.get('/app-signin', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.redirect('/?error=google_failed');
+  const data = appOAuthTokens.get(token);
+  if (!data || Date.now() > data.expires) {
+    return res.redirect('/?error=token_expired');
+  }
+  appOAuthTokens.delete(token); // one-time use
+  req.session.userId = data.userId;
+  req.session.name   = data.name;
+  return res.redirect('/');
 });
 
 // ── Forgot Password ───────────────────────────────────────────────────────────
