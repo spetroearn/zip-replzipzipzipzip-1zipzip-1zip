@@ -21,6 +21,7 @@ import com.spetro.earn.viewmodel.AppViewModel
 
 private val methods = listOf("PayPal", "Bank Transfer", "Crypto (USDT)", "Gift Card")
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WithdrawScreen(vm: AppViewModel) {
     val state by vm.state.collectAsState()
@@ -76,25 +77,33 @@ fun WithdrawScreen(vm: AppViewModel) {
         // Method selector
         Text("Payment Method", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextMuted)
         Spacer(Modifier.height(6.dp))
+
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
             OutlinedTextField(
-                value = method, onValueChange = {},
+                value = method,
+                onValueChange = {},
                 readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier.fillMaxWidth().menuAnchor(),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Primary, unfocusedBorderColor = Border,
-                    focusedContainerColor = BgCard2, unfocusedContainerColor = BgCard2,
-                    focusedTextColor = TextPrime, unfocusedTextColor = TextPrime
+                    focusedBorderColor = Primary,
+                    unfocusedBorderColor = Border,
+                    focusedContainerColor = BgCard2,
+                    unfocusedContainerColor = BgCard2,
+                    focusedTextColor = TextPrime,
+                    unfocusedTextColor = TextPrime
                 )
             )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false },
-                containerColor = BgCard2) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
                 methods.forEach { m ->
                     DropdownMenuItem(
                         text = { Text(m, color = TextPrime) },
-                        onClick = { method = m; expanded = false }
+                        onClick = { method = m; expanded = false },
+                        modifier = Modifier.background(BgCard2)
                     )
                 }
             }
@@ -132,7 +141,9 @@ fun WithdrawScreen(vm: AppViewModel) {
             Spacer(Modifier.height(12.dp))
             state.withdrawals.forEach { w ->
                 val statusColor = when (w.status) {
-                    "approved" -> Success; "rejected" -> Danger; else -> Warning
+                    "approved" -> Success
+                    "rejected" -> Danger
+                    else -> Warning
                 }
                 Surface(Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     shape = RoundedCornerShape(12.dp), color = BgCard, border = BorderStroke(1.dp, Border)) {
