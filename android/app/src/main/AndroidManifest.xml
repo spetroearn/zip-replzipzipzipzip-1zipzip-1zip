@@ -45,6 +45,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Custom URI scheme: spetroearn://auth-complete brings the
+                 user back into the app after Google OAuth in Chrome -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="spetroearn" />
+            </intent-filter>
+
             <!-- App Links: intercept spetroearn.com URLs so Google OAuth
                  callback returns to the app instead of opening Chrome -->
             <intent-filter android:autoVerify="true">
