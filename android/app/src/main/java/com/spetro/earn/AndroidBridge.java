@@ -1,8 +1,12 @@
 package com.spetro.earn;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -161,6 +165,78 @@ public class AndroidBridge {
         // return Adjoe.isInitialized() ? "ready" : "not_initialized";
         // ─────────────────────────────────────────────────────────────────────
         return "not_initialized";
+    }
+
+    // ── Native notifications ──────────────────────────────────────────────────
+    private static final String NOTIF_CHANNEL_ID = "spetro_alerts";
+
+    private void ensureNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm.getNotificationChannel(NOTIF_CHANNEL_ID) == null) {
+                NotificationChannel ch = new NotificationChannel(
+                    NOTIF_CHANNEL_ID, "Spetro Earn Alerts",
+                    NotificationManager.IMPORTANCE_HIGH
+                );
+                ch.setDescription("Coin credits and offer alerts");
+                nm.createNotificationChannel(ch);
+            }
+        }
+    }
+
+    @JavascriptInterface
+    public boolean isNotificationGranted() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            return context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                == PackageManager.PERMISSION_GRANTED;
+        }
+        return true; // Android < 13: permission always granted
+    }
+
+    @JavascriptInterface
+    public void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            ((android.app.Activity) context).runOnUiThread(() ->
+                androidx.core.app.ActivityCompat.requestPermissions(
+                    (android.app.Activity) context,
+                    new String[]{"android.permission.POST_NOTIFICATIONS"},
+                    1001
+                )
+            );
+        }
+    }
+
+    @JavascriptInterface
+    public void showNotification(String title, String body) {
+        if (!isNotificationGranted()) {
+            Log.w(TAG, "showNotification: permission not granted");
+            return;
+        }
+        ensureNotificationChannel();
+        ((android.app.Activity) context).runOnUiThread(() -> {
+            try {
+                Intent tapIntent = new Intent(context, MainActivity.class);
+                tapIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                PendingIntent pi = PendingIntent.getActivity(
+                    context, 0, tapIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                );
+                android.app.Notification.Builder builder =
+                    new android.app.Notification.Builder(context, NOTIF_CHANNEL_ID)
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setSmallIcon(android.R.drawable.ic_dialog_info)
+                        .setContentIntent(pi)
+                        .setAutoCancel(true);
+                NotificationManager nm = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+                nm.notify((int)(System.currentTimeMillis() % 100000), builder.build());
+                Log.d(TAG, "showNotification: " + title);
+            } catch (Exception e) {
+                Log.e(TAG, "showNotification error: " + e.getMessage());
+            }
+        });
     }
 
     // ── External URL / offer link opener ─────────────────────────────────────
