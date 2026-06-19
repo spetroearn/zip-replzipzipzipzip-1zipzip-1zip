@@ -134,7 +134,12 @@ function OfferModal({ wall, userId, onClose }) {
   }, [onClose]);
 
   const handleOpenExternal = () => {
-    if (resolvedUrl) window.open(resolvedUrl, '_blank', 'noopener,noreferrer');
+    if (!resolvedUrl) return;
+    if (window.AndroidBridge && window.AndroidBridge.openUrl) {
+      window.AndroidBridge.openUrl(resolvedUrl);
+    } else {
+      window.open(resolvedUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const modal = (
