@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
@@ -16,22 +17,20 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.json.JSONObject;
 
 /**
  * AndroidBridge — JavaScript Interface for Spetro Earn WebView
  *
- * This class is injected into the Capacitor WebView as "AndroidBridge" so that
- * JavaScript running inside the app can call native Android features.
- *
- * In JavaScript (client/src/pages/Offerwalls.jsx):
- *   window.AndroidBridge.isNativeApp()       → "true"
- *   window.AndroidBridge.startAdjoeSDK(...)  → initialises Adjoe Playtime SDK
- *   window.AndroidBridge.openAdjoeOfferwalls() → launches Adjoe UI
- *
- * INSTALLATION:
- *   Copy this file to:
- *   android/app/src/main/java/com/spetro/earn/AndroidBridge.java
+ * Injected as window.AndroidBridge. Key methods:
+ *   openCustomTab(url) — opens URL in Chrome Custom Tabs (in-app browser).
+ *                        Used for Google OAuth: after OAuth completes Chrome
+ *                        fires spetroearn://auth-complete → MainActivity closes
+ *                        the Custom Tab and exchanges the token for a session.
+ *   openUrl(url)       — plain Android Intent for Play Store / external links.
  */
 public class AndroidBridge {
 
@@ -45,8 +44,6 @@ public class AndroidBridge {
     }
 
     // ── Platform detection ────────────────────────────────────────────────────
-    // The frontend checks: typeof window.AndroidBridge !== 'undefined'
-    // to determine if it is running inside the APK.
 
     @JavascriptInterface
     public String getPlatform() {
@@ -91,8 +88,6 @@ public class AndroidBridge {
     }
 
     // ── User ID persistence ───────────────────────────────────────────────────
-    // The WebView calls setUserId() right after login so the native side
-    // always has the current Spetro user ID for Adjoe SDK initialisation.
 
     @JavascriptInterface
     public void setUserId(String userId) {
@@ -110,60 +105,20 @@ public class AndroidBridge {
     }
 
     // ── Adjoe Playtime SDK ────────────────────────────────────────────────────
-    // Requires: implementation 'io.adjoe:sdk:2.+' in android/app/build.gradle
-    //
-    // Adjoe documentation: https://docs.adjoe.io/android-sdk
-    //
-    // 1. Get your Adjoe App-Hash from the Adjoe publisher dashboard.
-    // 2. Set it in the Replit secret: ADJOE_APP_HASH
-    // 3. Pass it to startAdjoeSDK() from JavaScript after the user logs in.
 
     @JavascriptInterface
     public void startAdjoeSDK(String userId, String adjoeAppHash) {
-        Log.d(TAG, "startAdjoeSDK → userId=" + userId + ", appHash=" + adjoeAppHash);
-
-        // ─── Uncomment when Adjoe SDK is added to build.gradle: ───────────────
-        //
-        // AdjoeParams params = new AdjoeParams.Builder()
-        //     .setAppHash(adjoeAppHash)
-        //     .setUserId(userId)
-        //     .build();
-        //
-        // Adjoe.init(context, params, new AdjoeInitializationListener() {
-        //     @Override
-        //     public void onInitFinished() {
-        //         Log.d(TAG, "Adjoe SDK initialised successfully");
-        //         Adjoe.launch(context);
-        //     }
-        //     @Override
-        //     public void onInitError(Exception e) {
-        //         Log.e(TAG, "Adjoe SDK init error: " + e.getMessage());
-        //     }
-        // });
-        // ─────────────────────────────────────────────────────────────────────
-
-        // Persist userId for future calls
+        Log.d(TAG, "startAdjoeSDK → userId=" + userId);
         setUserId(userId);
     }
 
     @JavascriptInterface
     public void openAdjoeOfferwalls() {
         Log.d(TAG, "openAdjoeOfferwalls called");
-
-        // ─── Uncomment when Adjoe SDK is added to build.gradle: ───────────────
-        //
-        // ((android.app.Activity) context).runOnUiThread(() -> {
-        //     Adjoe.launch((android.app.Activity) context);
-        // });
-        // ─────────────────────────────────────────────────────────────────────
     }
 
     @JavascriptInterface
     public String getAdjoeStatus() {
-        // Returns "ready", "not_initialized", or "error"
-        // ─── Uncomment when Adjoe SDK is active: ──────────────────────────────
-        // return Adjoe.isInitialized() ? "ready" : "not_initialized";
-        // ─────────────────────────────────────────────────────────────────────
         return "not_initialized";
     }
 
@@ -191,7 +146,7 @@ public class AndroidBridge {
             return context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
                 == PackageManager.PERMISSION_GRANTED;
         }
-        return true; // Android < 13: permission always granted
+        return true;
     }
 
     @JavascriptInterface
@@ -239,12 +194,48 @@ public class AndroidBridge {
         });
     }
 
+    // ── Chrome Custom Tabs — in-app browser for Google OAuth ─────────────────
+    //
+    // Opens the URL in a Chrome Custom Tab that slides up OVER the app.
+    // After Google OAuth completes the server redirects to:
+    //   spetroearn://auth-complete?token=<one-time-token>
+    // Chrome Custom Tabs detects the custom scheme, fires an Intent, and
+    // automatically closes itself — MainActivity.onNewIntent() picks it up,
+    // loads /api/auth/app-signin?token=... in the WebView, and the user is
+    // logged in without ever leaving the app.
+
+    @JavascriptInterface
+    public void openCustomTab(String url) {
+        ((android.app.Activity) context).runOnUiThread(() -> {
+            try {
+                CustomTabColorSchemeParams darkParams = new CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(Color.parseColor("#0f172a"))
+                    .build();
+                CustomTabColorSchemeParams lightParams = new CustomTabColorSchemeParams.Builder()
+                    .setToolbarColor(Color.parseColor("#1e293b"))
+                    .build();
+
+                CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder()
+                    .setColorScheme(CustomTabsIntent.COLOR_SCHEME_DARK)
+                    .setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_DARK,  darkParams)
+                    .setColorSchemeParams(CustomTabsIntent.COLOR_SCHEME_LIGHT, lightParams)
+                    .setShowTitle(true)
+                    .build();
+
+                customTabsIntent.launchUrl(context, Uri.parse(url));
+                Log.d(TAG, "openCustomTab: " + url);
+            } catch (Exception e) {
+                Log.e(TAG, "openCustomTab failed: " + e.getMessage());
+                // Fallback to plain intent
+                openUrl(url);
+            }
+        });
+    }
+
     // ── External URL / offer link opener ─────────────────────────────────────
-    // Opens a URL via Android Intent so that:
-    //   • play.google.com/store/* → opens Play Store app natively
-    //   • market://*              → opens Play Store app natively
-    //   • other URLs              → opens default browser
-    // This avoids Chrome hijacking offer links out of the app.
+    // Opens via Android Intent:
+    //   play.google.com / market:// → Play Store
+    //   everything else             → default browser
 
     @JavascriptInterface
     public void openUrl(String url) {
