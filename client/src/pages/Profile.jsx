@@ -102,9 +102,13 @@ export default function Profile({ user, guest, onLogout, onBack, onGoLogin, onGo
   const toast = useToast();
   const [loggingOut, setLoggingOut] = useState(false);
   const [section, setSection] = useState('main'); // 'main' | 'support'
-  const [notifState, setNotifState] = useState(
-    'Notification' in window ? Notification.permission : 'unsupported'
-  );
+  const [notifState, setNotifState] = useState(() => {
+    if (window.AndroidBridge) {
+      try { return window.AndroidBridge.isNotificationGranted() ? 'granted' : 'default'; }
+      catch (_) { return 'default'; }
+    }
+    return 'Notification' in window ? Notification.permission : 'unsupported';
+  });
 
   if (guest) {
     return <GuestProfile onGoLogin={onGoLogin} onGoRegister={onGoRegister} onBack={onBack} />;
@@ -126,6 +130,20 @@ export default function Profile({ user, guest, onLogout, onBack, onGoLogin, onGo
   };
 
   const enableNotifications = async () => {
+    if (window.AndroidBridge) {
+      if (window.AndroidBridge.isNotificationGranted()) {
+        return toast.info('Notifications are already enabled.');
+      }
+      window.AndroidBridge.requestNotificationPermission();
+      toast.success('Tap Allow when the system dialog appears.');
+      setTimeout(() => {
+        try {
+          const granted = window.AndroidBridge.isNotificationGranted();
+          setNotifState(granted ? 'granted' : 'default');
+        } catch (_) {}
+      }, 2000);
+      return;
+    }
     if (!('Notification' in window)) return toast.info('Notifications not supported in this browser.');
     if (Notification.permission === 'granted') return toast.info('Notifications are already enabled.');
     try {
@@ -234,27 +252,25 @@ export default function Profile({ user, guest, onLogout, onBack, onGoLogin, onGo
         ))}
       </div>
 
-      {/* Notifications — hidden in native app (WebView doesn't support Web Push) */}
-      {!window.AndroidBridge && (
+      {/* Notifications */}
       <div className="card" style={{ marginBottom: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: notifGranted ? 'rgba(14,165,233,0.1)' : 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <BellIcon size={17} style={{ stroke: notifGranted ? 'var(--primary)' : 'var(--text-muted)' }} />
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 700, fontSize: 14 }}>Push Notifications</p>
+          <p style={{ fontWeight: 700, fontSize: 14 }}>Notifications</p>
           <p style={{ color: notifGranted ? 'var(--success)' : 'var(--text-muted)', fontSize: 12, marginTop: 1 }}>
             {notifGranted ? 'Enabled — you will receive offer alerts'
-              : notifState === 'denied' ? 'Blocked in browser settings'
+              : notifState === 'denied' ? 'Blocked — enable from device Settings'
               : notifState === 'unsupported' ? 'Not supported on this browser'
               : 'Not yet enabled'}
           </p>
         </div>
-        {!notifGranted && notifState !== 'unsupported' && (
+        {!notifGranted && notifState !== 'unsupported' && notifState !== 'denied' && (
           <button className="btn btn-primary" style={{ padding: '8px 14px', fontSize: 13, flexShrink: 0 }} onClick={enableNotifications}>Enable</button>
         )}
         {notifGranted && <ShieldIcon size={18} style={{ stroke: 'var(--success)', flexShrink: 0 }} />}
       </div>
-      )}
 
       {/* Support row */}
       <button
