@@ -1,7 +1,9 @@
 package com.spetro.earn;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -159,6 +161,26 @@ public class AndroidBridge {
         // return Adjoe.isInitialized() ? "ready" : "not_initialized";
         // ─────────────────────────────────────────────────────────────────────
         return "not_initialized";
+    }
+
+    // ── External URL / offer link opener ─────────────────────────────────────
+    // Opens a URL via Android Intent so that:
+    //   • play.google.com/store/* → opens Play Store app natively
+    //   • market://*              → opens Play Store app natively
+    //   • other URLs              → opens default browser
+    // This avoids Chrome hijacking offer links out of the app.
+
+    @JavascriptInterface
+    public void openUrl(String url) {
+        try {
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+            Log.d(TAG, "openUrl: " + url);
+        } catch (Exception e) {
+            Log.e(TAG, "openUrl failed for " + url + ": " + e.getMessage());
+        }
     }
 
     // ── UI helpers ────────────────────────────────────────────────────────────
