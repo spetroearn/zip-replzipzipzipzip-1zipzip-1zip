@@ -54,6 +54,7 @@ const PUSH_KEY = 'spetro_push_asked_at';
 const PUSH_RETRY_MS = 5 * 60 * 1000;
 
 function shouldShowPushBanner() {
+  if (window.AndroidBridge) return false; // native app — WebView doesn't support Web Push
   if (!('Notification' in window)) return false;
   if (Notification.permission !== 'default') return false;
   const last = localStorage.getItem(PUSH_KEY);
@@ -619,7 +620,11 @@ function FeaturedOffers({ user }) {
     const uid = user?.uid || '';
     const sep = offer.tracking_link.includes('?') ? '&' : '?';
     const url = `${offer.tracking_link}${sep}sub2=${uid}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    if (window.AndroidBridge && window.AndroidBridge.openUrl) {
+      window.AndroidBridge.openUrl(url);
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
