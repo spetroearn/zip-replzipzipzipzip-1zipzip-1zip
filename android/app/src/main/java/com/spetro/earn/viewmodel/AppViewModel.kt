@@ -15,9 +15,14 @@ data class AppState(
     val toast: String? = null,
     val transactions: List<Transaction> = emptyList(),
     val offerwalls: List<OfferwallItem> = emptyList(),
+    val offerwallsLoading: Boolean = false,
     val withdrawals: List<WithdrawalRecord> = emptyList(),
     val coinEarnAmount: Int = 0,
     val showCoinEarnAnim: Boolean = false,
+    val vpnBlocked: Boolean = false,
+    val vpnRiskScore: Int = 0,
+    val vpnChecked: Boolean = false,
+    val showNameDialog: Boolean = false,
 )
 
 class AppViewModel : ViewModel() {
@@ -30,6 +35,7 @@ class AppViewModel : ViewModel() {
     private fun toast(msg: String) = update { copy(toast = msg) }
     fun clearToast() = update { copy(toast = null) }
     fun clearCoinAnim() = update { copy(showCoinEarnAnim = false, coinEarnAmount = 0) }
+    fun dismissNameDialog() = update { copy(showNameDialog = false) }
 
     private fun triggerCoinAnim(amount: Int) {
         update { copy(coinEarnAmount = amount, showCoinEarnAnim = true) }
@@ -41,7 +47,13 @@ class AppViewModel : ViewModel() {
         update { copy(loading = true) }
         try {
             val r = api.me()
-            update { copy(user = if (r.isSuccessful) r.body()?.user else null, loading = false) }
+            if (r.isSuccessful) {
+                val user = r.body()?.user
+                val needsNameSetup = user != null && user.name.any { it.isDigit() }
+                update { copy(user = user, loading = false, showNameDialog = needsNameSetup) }
+            } else {
+                update { copy(user = null, loading = false) }
+            }
         } catch (_: Exception) {
             update { copy(user = null, loading = false) }
         }
@@ -53,7 +65,9 @@ class AppViewModel : ViewModel() {
         try {
             val r = api.login(LoginRequest(email.trim(), password))
             if (r.isSuccessful) {
-                update { copy(user = r.body()?.user, loading = false) }
+                val user = r.body()?.user
+                val needsName = user != null && user.name.any { it.isDigit() }
+                update { copy(user = user, loading = false, showNameDialog = needsName) }
                 onSuccess()
             } else {
                 update { copy(loading = false) }
@@ -94,6 +108,21 @@ class AppViewModel : ViewModel() {
         }
     }
 
+    fun updateName(name: String, onSuccess: () -> Unit) = viewModelScope.launch {
+        try {
+            val r = api.updateName(UpdateNameRequest(name.trim()))
+            if (r.isSuccessful) {
+                update { copy(showNameDialog = false) }
+                fetchMe()
+                onSuccess()
+            } else {
+                toast(parseError(r.errorBody()?.string()))
+            }
+        } catch (_: Exception) {
+            toast("Connection error.")
+        }
+    }
+
     fun logout(onDone: () -> Unit) = viewModelScope.launch {
         try { api.logout() } catch (_: Exception) {}
         ApiClient.clearSession()
@@ -103,6 +132,26 @@ class AppViewModel : ViewModel() {
 
     fun onGoogleAuthComplete() = fetchMe()
 
+    // ── VPN check ─────────────────────────────────────────────────────────────
+    fun checkVpn() = viewModelScope.launch {
+        if (_state.value.vpnChecked) return@launch
+        try {
+            val r = api.vpnCheck()
+            if (r.isSuccessful) {
+                val body = r.body()!!
+                update {
+                    copy(
+                        vpnBlocked = body.blocked || body.isVpn || body.riskScore >= 75,
+                        vpnRiskScore = body.riskScore,
+                        vpnChecked = true
+                    )
+                }
+            }
+        } catch (_: Exception) {
+            update { copy(vpnChecked = true) }
+        }
+    }
+
     // ── Coins ─────────────────────────────────────────────────────────────────
     fun claimDaily() = viewModelScope.launch {
         try {
@@ -110,7 +159,7 @@ class AppViewModel : ViewModel() {
             if (r.isSuccessful) {
                 val body = r.body()!!
                 triggerCoinAnim(5)
-                toast("Day ${body.checkinStreak} check-in — +${5} SC earned!")
+                toast("Day ${body.checkinStreak} check-in — +5 SC earned!")
                 fetchMe()
                 loadHistory()
             } else {
@@ -128,13 +177,28 @@ class AppViewModel : ViewModel() {
         } catch (_: Exception) {}
     }
 
-    // ── Offerwalls ────────────────────────────────────────────────────────────
+    // ── Offerwalls — parse { config: { id: { url, enabled } } } ──────────────
     fun loadOfferwalls() = viewModelScope.launch {
+        update { copy(offerwallsLoading = true) }
         try {
             val r = api.offerwallConfig()
-            if (r.isSuccessful) update { copy(offerwalls = r.body()?.walls ?: emptyList()) }
-        } catch (_: Exception) {}
+            if (r.isSuccessful) {
+                val configMap = r.body()?.config ?: emptyMap()
+                val walls = configMap.map { (id, cfg) ->
+                    OfferwallItem(id = id, name = id, enabled = cfg.enabled, url = cfg.url?.takeIf { it.isNotBlank() })
+                }
+                update { copy(offerwalls = walls, offerwallsLoading = false) }
+            } else {
+                update { copy(offerwalls = buildFallbackWalls(), offerwallsLoading = false) }
+            }
+        } catch (_: Exception) {
+            update { copy(offerwalls = buildFallbackWalls(), offerwallsLoading = false) }
+        }
     }
+
+    private fun buildFallbackWalls() = listOf(
+        "adjoe", "revu", "offery", "ovnix", "adtowall", "taskwall", "torox", "mychips"
+    ).map { OfferwallItem(id = it, name = it, enabled = true, url = null) }
 
     // ── Withdraw ──────────────────────────────────────────────────────────────
     fun submitWithdraw(method: String, amount: Int, address: String, onSuccess: () -> Unit) =

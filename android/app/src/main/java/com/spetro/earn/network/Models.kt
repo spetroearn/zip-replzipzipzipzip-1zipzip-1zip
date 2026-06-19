@@ -31,6 +31,9 @@ data class RegisterRequest(
     @SerializedName("deviceId") val deviceId: String? = null
 )
 
+data class UpdateNameRequest(val name: String)
+data class SimpleResponse(val success: Boolean = false, val error: String? = null)
+
 // ── Coins ─────────────────────────────────────────────────────────────────────
 data class DailyResponse(
     val success: Boolean = false,
@@ -46,19 +49,29 @@ data class Transaction(
     val description: String,
     @SerializedName("created_at") val createdAt: String
 )
-
 data class HistoryResponse(val transactions: List<Transaction>)
 
-// ── Offerwalls ────────────────────────────────────────────────────────────────
+// ── Offerwalls — matches server shape: { config: { adjoe: { url, enabled } } } ─
+data class OfferwallNetworkConfig(
+    val url: String? = null,
+    val enabled: Boolean = true
+)
+data class OfferwallConfigMap(val config: Map<String, OfferwallNetworkConfig>? = null)
+
+// Flat item used inside the ViewModel
 data class OfferwallItem(
     val id: String,
     val name: String,
     val enabled: Boolean,
-    val url: String?,
-    @SerializedName("network_id") val networkId: String? = null
+    val url: String?
 )
 
-data class OfferwallConfigResponse(val walls: List<OfferwallItem>)
+// ── VPN check ────────────────────────────────────────────────────────────────
+data class VpnCheckResponse(
+    val blocked: Boolean = false,
+    val isVpn: Boolean = false,
+    val riskScore: Int = 0
+)
 
 // ── Withdraw ──────────────────────────────────────────────────────────────────
 data class WithdrawRequest(

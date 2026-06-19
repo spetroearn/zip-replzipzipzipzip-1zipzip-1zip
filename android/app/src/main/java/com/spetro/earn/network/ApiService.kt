@@ -18,6 +18,12 @@ interface ApiService {
     @GET("api/auth/me")
     suspend fun me(): Response<AuthResponse>
 
+    @POST("api/auth/update-name")
+    suspend fun updateName(@Body body: UpdateNameRequest): Response<SimpleResponse>
+
+    @GET("api/auth/vpn-check")
+    suspend fun vpnCheck(): Response<VpnCheckResponse>
+
     // Coins
     @POST("api/coins/claim/daily")
     suspend fun claimDaily(): Response<DailyResponse>
@@ -25,9 +31,9 @@ interface ApiService {
     @GET("api/coins/history")
     suspend fun coinHistory(): Response<HistoryResponse>
 
-    // Offerwalls
+    // Offerwalls — server returns { config: { network_id: { url, enabled } } }
     @GET("api/offerwalls/config")
-    suspend fun offerwallConfig(): Response<OfferwallConfigResponse>
+    suspend fun offerwallConfig(): Response<OfferwallConfigMap>
 
     // Withdraw
     @POST("api/withdraw")

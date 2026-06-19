@@ -1,6 +1,5 @@
 package com.spetro.earn.ui.screens
 
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -25,8 +24,6 @@ import com.spetro.earn.ui.theme.*
 import kotlinx.coroutines.launch
 
 private data class OnboardPage(
-    val icon: ImageVector,
-    val iconBg: Brush,
     val title: String,
     val subtitle: String,
     val items: List<Pair<ImageVector, String>>
@@ -34,8 +31,6 @@ private data class OnboardPage(
 
 private val pages = listOf(
     OnboardPage(
-        icon = Icons.Default.Bolt,
-        iconBg = Brush.linearGradient(listOf(Color(0xFF3b82f6), Color(0xFF1d4ed8))),
         title = "Welcome to Spetro Earn",
         subtitle = "Earn real rewards by completing simple tasks and daily activities.",
         items = listOf(
@@ -45,8 +40,6 @@ private val pages = listOf(
         )
     ),
     OnboardPage(
-        icon = Icons.Default.Stars,
-        iconBg = Brush.linearGradient(listOf(Color(0xFF8b5cf6), Color(0xFF6d28d9))),
         title = "Multiple Ways to Earn",
         subtitle = "Collect Spetro Coins from a variety of earn methods every day.",
         items = listOf(
@@ -56,8 +49,6 @@ private val pages = listOf(
         )
     ),
     OnboardPage(
-        icon = Icons.Default.AccountBalanceWallet,
-        iconBg = Brush.linearGradient(listOf(Color(0xFF10b981), Color(0xFF059669))),
         title = "Withdraw Real Rewards",
         subtitle = "Convert your coins to real money via multiple payment methods.",
         items = listOf(
@@ -66,6 +57,12 @@ private val pages = listOf(
             Icons.Default.CardGiftcard to "Google Play Gift Cards"
         )
     )
+)
+
+private val pageGradients = listOf(
+    Brush.linearGradient(listOf(Color(0xFF1e3a8a), Color(0xFF3b82f6), Color(0xFF0ea5e9))),
+    Brush.linearGradient(listOf(Color(0xFF4c1d95), Color(0xFF7c3aed), Color(0xFF8b5cf6))),
+    Brush.linearGradient(listOf(Color(0xFF064e3b), Color(0xFF059669), Color(0xFF10b981)))
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -80,7 +77,7 @@ fun OnboardingScreen(onDone: () -> Unit) {
             .background(BgDeep)
     ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { pageIdx ->
-            OnboardPageContent(pages[pageIdx])
+            OnboardPageContent(pages[pageIdx], pageGradients[pageIdx], pageIdx)
         }
 
         // Bottom controls
@@ -88,20 +85,20 @@ fun OnboardingScreen(onDone: () -> Unit) {
             Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 24.dp, vertical = 40.dp),
+                .padding(horizontal = 24.dp, vertical = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Dots
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 repeat(pages.size) { i ->
                     val selected = pagerState.currentPage == i
                     val width by animateDpAsState(
-                        targetValue = if (selected) 28.dp else 8.dp,
-                        animationSpec = spring(Spring.DampingRatioMediumBouncy)
+                        targetValue = if (selected) 26.dp else 7.dp,
+                        animationSpec = spring(Spring.DampingRatioMediumBouncy), label = ""
                     )
                     Box(
                         Modifier
-                            .height(8.dp)
+                            .height(7.dp)
                             .width(width)
                             .clip(CircleShape)
                             .background(if (selected) Primary else BgCard2)
@@ -109,28 +106,24 @@ fun OnboardingScreen(onDone: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(24.dp))
 
             if (pagerState.currentPage < pages.size - 1) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onDone) {
                         Text("Skip", color = TextMuted, fontSize = 15.sp)
                     }
                     Box(
                         Modifier
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(Brush.linearGradient(listOf(Primary, PrimaryDk)))
-                            .clickable {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                }
-                            }
+                            .clickable { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } }
                             .padding(horizontal = 28.dp, vertical = 14.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Next", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
                             Spacer(Modifier.width(6.dp))
-                            Icon(Icons.Default.ArrowForward, null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.ArrowForward, null, tint = Color.White, modifier = Modifier.size(15.dp))
                         }
                     }
                 }
@@ -152,52 +145,62 @@ fun OnboardingScreen(onDone: () -> Unit) {
 }
 
 @Composable
-private fun OnboardPageContent(page: OnboardPage) {
+private fun OnboardPageContent(page: OnboardPage, gradient: Brush, pageIndex: Int) {
     Column(
         Modifier
             .fillMaxSize()
             .padding(horizontal = 28.dp)
-            .padding(top = 80.dp, bottom = 160.dp),
+            .padding(top = 72.dp, bottom = 160.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Animated icon
-        val infiniteTransition = rememberInfiniteTransition(label = "icon")
-        val scale by infiniteTransition.animateFloat(
-            initialValue = 1f, targetValue = 1.06f, label = "scale",
-            animationSpec = infiniteRepeatable(
-                animation = tween(2000, easing = EaseInOut),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-
-        Box(
-            Modifier
-                .size((100 * scale).dp)
-                .clip(RoundedCornerShape(28.dp))
-                .background(page.iconBg),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(page.icon, null, tint = Color.White, modifier = Modifier.size(52.dp))
+        // Page 0 shows the SE brand logo; other pages show an icon box
+        if (pageIndex == 0) {
+            // SE Brand logo — no lightning bolt
+            Box(
+                Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(gradient),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "SE",
+                    fontSize = 38.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+            }
+        } else {
+            Box(
+                Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(gradient),
+                contentAlignment = Alignment.Center
+            ) {
+                val icon = if (pageIndex == 1) Icons.Default.Stars else Icons.Default.AccountBalanceWallet
+                Icon(icon, null, tint = Color.White, modifier = Modifier.size(52.dp))
+            }
         }
 
-        Spacer(Modifier.height(36.dp))
+        Spacer(Modifier.height(32.dp))
         Text(
             page.title, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
             color = TextPrime, textAlign = TextAlign.Center, lineHeight = 32.sp
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             page.subtitle, fontSize = 15.sp, color = TextMuted,
             textAlign = TextAlign.Center, lineHeight = 22.sp
         )
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(28.dp))
 
         page.items.forEach { (icon, text) ->
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp),
+                    .padding(vertical = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(

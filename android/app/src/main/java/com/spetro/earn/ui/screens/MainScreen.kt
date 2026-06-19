@@ -83,6 +83,11 @@ fun MainScreen(vm: AppViewModel, onLogout: () -> Unit) {
             }
         }
     ) { padding ->
+        // Name setup dialog — for users with auto-generated Google names (contain digits)
+        if (state.showNameDialog) {
+            NameSetupDialog(vm = vm, onDone = { vm.dismissNameDialog() })
+        }
+
         Box(Modifier.padding(padding)) {
             AnimatedContent(
                 targetState = current,
