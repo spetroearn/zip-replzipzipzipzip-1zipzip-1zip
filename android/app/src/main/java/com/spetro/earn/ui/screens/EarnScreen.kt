@@ -157,10 +157,13 @@ fun EarnScreen(vm: AppViewModel) {
             val serverMap = state.offerwalls.associateBy { it.id.lowercase() }
             val allWalls = listOf("adjoe", "revu", "offery", "ovnix", "adtowall", "taskwall", "torox", "mychips")
 
+            val userUid = state.user?.uid ?: state.user?.id?.toString() ?: ""
             allWalls.forEachIndexed { idx, networkId ->
                 val serverEntry = serverMap[networkId]
                 val enabled = serverEntry?.enabled != false
-                val url = serverEntry?.url
+                // Substitute {USER_ID} placeholder with actual user UID
+                val rawUrl = serverEntry?.url
+                val url = rawUrl?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
                 val brand = brandMap[networkId]
 
                 if (enabled) {
