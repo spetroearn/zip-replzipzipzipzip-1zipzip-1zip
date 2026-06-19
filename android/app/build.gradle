@@ -41,6 +41,8 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // Chrome Custom Tabs — used for Google OAuth in-app browser
+    implementation "androidx.browser:browser:1.7.0"
 }
 
 apply from: 'capacitor.build.gradle'
