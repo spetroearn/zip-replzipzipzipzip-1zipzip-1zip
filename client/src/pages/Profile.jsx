@@ -234,7 +234,8 @@ export default function Profile({ user, guest, onLogout, onBack, onGoLogin, onGo
         ))}
       </div>
 
-      {/* Notifications */}
+      {/* Notifications — hidden in native app (WebView doesn't support Web Push) */}
+      {!window.AndroidBridge && (
       <div className="card" style={{ marginBottom: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
         <div style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, background: notifGranted ? 'rgba(14,165,233,0.1)' : 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <BellIcon size={17} style={{ stroke: notifGranted ? 'var(--primary)' : 'var(--text-muted)' }} />
@@ -253,6 +254,7 @@ export default function Profile({ user, guest, onLogout, onBack, onGoLogin, onGo
         )}
         {notifGranted && <ShieldIcon size={18} style={{ stroke: 'var(--success)', flexShrink: 0 }} />}
       </div>
+      )}
 
       {/* Support row */}
       <button
