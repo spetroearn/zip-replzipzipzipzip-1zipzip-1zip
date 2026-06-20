@@ -33,26 +33,38 @@ private enum class PayMethod(
     val isCryptoAddress: Boolean
 ) {
     VISA(
-        "Visa Card", "Visa / Mastercard", "Bank card transfer", "VISA",
+        "visa", "Visa / Mastercard", "Bank card transfer", "VISA",
         Brush.linearGradient(listOf(Color(0xFF1e3a8a), Color(0xFF2563eb))),
         Color(0xFF3b82f6), false
     ),
     BINANCE(
-        "Binance", "Binance (USDT)", "Binance UID or wallet", "BNB",
+        "binance_usdt", "Binance (USDT)", "Binance UID or wallet", "BNB",
         Brush.linearGradient(listOf(Color(0xFF78350f), Color(0xFFd97706))),
         Color(0xFFf59e0b), true
     ),
     LITECOIN(
-        "Litecoin", "Litecoin (LTC)", "Crypto wallet address", "LTC",
+        "litecoin", "Litecoin (LTC)", "Crypto wallet address", "LTC",
         Brush.linearGradient(listOf(Color(0xFF1e3a5f), Color(0xFF2563eb))),
         Color(0xFF60a5fa), true
     ),
     GOOGLE_PLAY(
-        "Google Play", "Google Play", "Gift card via Gmail", "GP",
+        "google_play", "Google Play", "Gift card via Gmail", "GP",
         Brush.linearGradient(listOf(Color(0xFF064e3b), Color(0xFF059669))),
         Color(0xFF10b981), false
     )
 }
+
+// Preset withdrawal tiers for non-crypto methods (Visa / Google Play).
+// 1000 SC = $1 (matches the server MIN_WITHDRAWAL of 1000 coins).
+private data class WithdrawTier(val coins: Int, val usd: String)
+private val PRESET_TIERS = listOf(
+    WithdrawTier(1000, "$1"),
+    WithdrawTier(2000, "$2"),
+    WithdrawTier(3000, "$3"),
+    WithdrawTier(5000, "$5")
+)
+
+private const val MIN_WITHDRAWAL = 1000
 
 @Composable
 fun WithdrawScreen(vm: AppViewModel) {
@@ -60,6 +72,7 @@ fun WithdrawScreen(vm: AppViewModel) {
     val user = state.user ?: return
     var selectedMethod by remember { mutableStateOf(PayMethod.VISA) }
     var amountStr by remember { mutableStateOf("") }
+    var selectedTier by remember { mutableStateOf<Int?>(null) }
     var address by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { vm.loadWithdrawals() }
@@ -89,19 +102,19 @@ fun WithdrawScreen(vm: AppViewModel) {
                     Text("≈ ${"%.2f".format(user.coins / 1000.0)} USD", fontSize = 12.sp, color = Color.White.copy(.5f))
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Min: 500 SC", fontSize = 11.sp, color = Color.White.copy(.6f))
-                    Text("≈ \$0.50 USD", fontSize = 11.sp, color = Color.White.copy(.4f))
+                    Text("Min: 1000 SC", fontSize = 11.sp, color = Color.White.copy(.6f))
+                    Text("≈ \$1.00 USD", fontSize = 11.sp, color = Color.White.copy(.4f))
                 }
             }
         }
 
-        if (user.coins < 500) {
+        if (user.coins < MIN_WITHDRAWAL) {
             Spacer(Modifier.height(10.dp))
             Surface(shape = RoundedCornerShape(12.dp), color = Warning.copy(.08f), border = BorderStroke(1.dp, Warning.copy(.3f))) {
                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.WarningAmber, null, tint = Warning, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("You need at least 500 SC to withdraw.", fontSize = 12.sp, color = Warning)
+                    Text("You need at least 1000 SC to withdraw.", fontSize = 12.sp, color = Warning)
                 }
             }
         }
@@ -113,13 +126,13 @@ fun WithdrawScreen(vm: AppViewModel) {
         Spacer(Modifier.height(10.dp))
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MethodCard(Modifier.weight(1f), PayMethod.VISA, selectedMethod.id == PayMethod.VISA.id) { selectedMethod = PayMethod.VISA; address = "" }
-            MethodCard(Modifier.weight(1f), PayMethod.BINANCE, selectedMethod.id == PayMethod.BINANCE.id) { selectedMethod = PayMethod.BINANCE; address = "" }
+            MethodCard(Modifier.weight(1f), PayMethod.VISA, selectedMethod.id == PayMethod.VISA.id) { selectedMethod = PayMethod.VISA; address = ""; amountStr = ""; selectedTier = null }
+            MethodCard(Modifier.weight(1f), PayMethod.BINANCE, selectedMethod.id == PayMethod.BINANCE.id) { selectedMethod = PayMethod.BINANCE; address = ""; amountStr = ""; selectedTier = null }
         }
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MethodCard(Modifier.weight(1f), PayMethod.LITECOIN, selectedMethod.id == PayMethod.LITECOIN.id) { selectedMethod = PayMethod.LITECOIN; address = "" }
-            MethodCard(Modifier.weight(1f), PayMethod.GOOGLE_PLAY, selectedMethod.id == PayMethod.GOOGLE_PLAY.id) { selectedMethod = PayMethod.GOOGLE_PLAY; address = "" }
+            MethodCard(Modifier.weight(1f), PayMethod.LITECOIN, selectedMethod.id == PayMethod.LITECOIN.id) { selectedMethod = PayMethod.LITECOIN; address = ""; amountStr = ""; selectedTier = null }
+            MethodCard(Modifier.weight(1f), PayMethod.GOOGLE_PLAY, selectedMethod.id == PayMethod.GOOGLE_PLAY.id) { selectedMethod = PayMethod.GOOGLE_PLAY; address = ""; amountStr = ""; selectedTier = null }
         }
 
         Spacer(Modifier.height(20.dp))
@@ -134,18 +147,27 @@ fun WithdrawScreen(vm: AppViewModel) {
                 Text("${method.label} Details", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrime)
                 Spacer(Modifier.height(12.dp))
 
-                // Amount
-                AuthField(
-                    label = "Amount in SC — Minimum 500",
-                    value = amountStr,
-                    onValue = { amountStr = it.filter { c -> c.isDigit() } },
-                    keyboardType = KeyboardType.Number,
-                    leadingIcon = Icons.Default.MonetizationOn
-                )
-                Spacer(Modifier.height(10.dp))
-
                 if (!method.isCryptoAddress) {
-                    // Visa or Google Play — show visual card mockup + appropriate field
+                    // Visa or Google Play — choose a preset amount tier
+                    Text("Select Amount", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextMuted)
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PRESET_TIERS.take(2).forEach { tier ->
+                            TierCard(Modifier.weight(1f), tier, method.accent, selectedTier == tier.coins, user.coins >= tier.coins) {
+                                selectedTier = tier.coins
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PRESET_TIERS.drop(2).forEach { tier ->
+                            TierCard(Modifier.weight(1f), tier, method.accent, selectedTier == tier.coins, user.coins >= tier.coins) {
+                                selectedTier = tier.coins
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(14.dp))
+
                     if (method == PayMethod.VISA) {
                         VisaCardMockup()
                         Spacer(Modifier.height(12.dp))
@@ -156,7 +178,15 @@ fun WithdrawScreen(vm: AppViewModel) {
                         AuthField("Gmail Address to receive gift card", address, { address = it }, KeyboardType.Email, Icons.Default.Email)
                     }
                 } else {
-                    // Binance or Litecoin — standard crypto address
+                    // Binance or Litecoin — manual amount + crypto address
+                    AuthField(
+                        label = "Amount in SC — Minimum 1000",
+                        value = amountStr,
+                        onValue = { amountStr = it.filter { c -> c.isDigit() } },
+                        keyboardType = KeyboardType.Number,
+                        leadingIcon = Icons.Default.MonetizationOn
+                    )
+                    Spacer(Modifier.height(10.dp))
                     AuthField(
                         label = if (method == PayMethod.BINANCE) "Binance UID or Wallet Address" else "LTC Wallet Address",
                         value = address,
@@ -170,16 +200,17 @@ fun WithdrawScreen(vm: AppViewModel) {
 
         Spacer(Modifier.height(18.dp))
 
-        val amount = amountStr.toIntOrNull() ?: 0
+        val amount = if (selectedMethod.isCryptoAddress) (amountStr.toIntOrNull() ?: 0) else (selectedTier ?: 0)
         GradientButton(
             text = "Submit Withdrawal",
             onClick = {
                 vm.submitWithdraw(selectedMethod.id, amount, address) {
                     amountStr = ""
                     address = ""
+                    selectedTier = null
                 }
             },
-            enabled = amount >= 500 && amount <= user.coins && address.isNotBlank()
+            enabled = amount >= MIN_WITHDRAWAL && amount <= user.coins && address.isNotBlank()
         )
 
         Spacer(Modifier.height(10.dp))
@@ -260,6 +291,46 @@ private fun MethodCard(modifier: Modifier, method: PayMethod, selected: Boolean,
             Spacer(Modifier.height(7.dp))
             Text(method.label, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextPrime, textAlign = TextAlign.Center, maxLines = 1)
             Text(method.subtitle, fontSize = 10.sp, color = TextDim, textAlign = TextAlign.Center, maxLines = 1)
+        }
+    }
+}
+
+// ── Preset amount tier card ───────────────────────────────────────────────────
+
+@Composable
+private fun TierCard(
+    modifier: Modifier,
+    tier: WithdrawTier,
+    accent: Color,
+    selected: Boolean,
+    affordable: Boolean,
+    onClick: () -> Unit
+) {
+    val borderColor by animateColorAsState(if (selected) accent else Border, tween(160), label = "tb")
+    val bgColor by animateColorAsState(if (selected) accent.copy(.12f) else BgCard, tween(160), label = "tbg")
+
+    Surface(
+        modifier = modifier.clickable(enabled = affordable, onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        color = if (affordable) bgColor else BgCard.copy(.5f),
+        border = BorderStroke(if (selected) 2.dp else 1.dp, borderColor)
+    ) {
+        Column(Modifier.padding(vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                tier.usd,
+                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold,
+                color = if (affordable) (if (selected) accent else TextPrime) else TextDim
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                "${tier.coins} SC",
+                fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+                color = if (affordable) TextMuted else TextDim
+            )
+            if (!affordable) {
+                Spacer(Modifier.height(2.dp))
+                Text("Not enough", fontSize = 9.sp, color = TextDim)
+            }
         }
     }
 }

@@ -28,6 +28,16 @@ import com.spetro.earn.network.OfferwallItem
 import com.spetro.earn.ui.theme.*
 import com.spetro.earn.viewmodel.AppViewModel
 
+// Parse an admin-configured hex colour (e.g. "#3b82f6"); null/blank/invalid → fallback.
+private fun parseHexColor(hex: String?, fallback: Color): Color {
+    if (hex.isNullOrBlank()) return fallback
+    return try {
+        Color(android.graphics.Color.parseColor(hex.trim()))
+    } catch (_: Exception) {
+        fallback
+    }
+}
+
 private data class WallBrand(
     val displayName: String,
     val description: String,
@@ -78,6 +88,29 @@ private val brandMap = mapOf(
         Brush.linearGradient(listOf(Color(0xFF7c2d12), Color(0xFFea580c)))
     )
 )
+
+// Build the effective brand for a network, letting admin-configured values
+// (color, display name, description) override the static defaults so changes in
+// the admin panel reflect in the app without an APK update.
+private fun resolveBrand(networkId: String, server: OfferwallItem?): WallBrand {
+    val base = brandMap[networkId] ?: WallBrand(
+        displayName = networkId.replaceFirstChar { it.uppercase() },
+        description = "Complete offers and earn coins",
+        category = "EARN",
+        accent = Primary,
+        gradient = Brush.linearGradient(listOf(BgCard2, BgCard2))
+    )
+    val accent = parseHexColor(server?.color, base.accent)
+    val customAccent = !server?.color.isNullOrBlank()
+    return base.copy(
+        displayName = server?.displayName?.takeIf { it.isNotBlank() } ?: base.displayName,
+        description = server?.description?.takeIf { it.isNotBlank() } ?: base.description,
+        accent = accent,
+        gradient = if (customAccent)
+            Brush.linearGradient(listOf(accent.copy(.55f), accent))
+        else base.gradient
+    )
+}
 
 @Composable
 fun EarnScreen(vm: AppViewModel) {
@@ -166,21 +199,17 @@ fun EarnScreen(vm: AppViewModel) {
                 serverMap[id]?.enabled != false
             }
             if (featuredEnabled.isNotEmpty()) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    featuredEnabled.forEachIndexed { idx, networkId ->
-                        val serverEntry = serverMap[networkId]
-                        val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
-                        val brand = brandMap[networkId]
-                        val sdkKey = serverEntry?.sdkKey
-                        FeaturedWallCard(
-                            networkId = networkId, url = url, brand = brand, ctx = ctx,
-                            modifier = Modifier.weight(1f), index = idx, sdkKey = sdkKey
-                        )
-                    }
-                    // If only one featured item, add spacer for balance
-                    if (featuredEnabled.size == 1) Spacer(Modifier.weight(1f))
+                featuredEnabled.forEachIndexed { idx, networkId ->
+                    val serverEntry = serverMap[networkId]
+                    val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
+                    val brand = resolveBrand(networkId, serverEntry)
+                    val sdkKey = serverEntry?.sdkKey
+                    FeaturedWallCard(
+                        networkId = networkId, url = url, brand = brand, ctx = ctx,
+                        index = idx, sdkKey = sdkKey
+                    )
+                    Spacer(Modifier.height(10.dp))
                 }
-                Spacer(Modifier.height(10.dp))
             }
 
             // ── Regular list ───────────────────────────────────────────────
@@ -188,7 +217,7 @@ fun EarnScreen(vm: AppViewModel) {
                 val serverEntry = serverMap[networkId]
                 val enabled = serverEntry?.enabled != false
                 val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
-                val brand = brandMap[networkId]
+                val brand = resolveBrand(networkId, serverEntry)
                 if (enabled) {
                     WallCard(networkId = networkId, url = url, brand = brand, ctx = ctx, index = idx + 2)
                     Spacer(Modifier.height(10.dp))
@@ -206,7 +235,6 @@ private fun FeaturedWallCard(
     url: String?,
     brand: WallBrand?,
     ctx: Context,
-    modifier: Modifier = Modifier,
     index: Int = 0,
     sdkKey: String? = null
 ) {
@@ -223,13 +251,11 @@ private fun FeaturedWallCard(
 
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.92f),
-        modifier = modifier
+        enter = fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.96f)
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(0.85f)
                 .clickable(enabled = isClickable) {
                     // Try native SDK first (adjoe Playtime), fall back to web URL
                     val sdkLaunched = if (hasSdk && ctx is Activity) {
@@ -239,62 +265,68 @@ private fun FeaturedWallCard(
                 },
             shape = RoundedCornerShape(22.dp),
             color = BgCard,
-            border = BorderStroke(1.5.dp, if (hasUrl) accent.copy(.35f) else Border)
+            border = BorderStroke(1.5.dp, if (hasUrl || hasSdk) accent.copy(.35f) else Border)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .background(brand?.gradient ?: Brush.linearGradient(listOf(BgCard2, BgCard2)))
+                    .padding(18.dp)
             ) {
-                Column(
-                    Modifier.fillMaxSize().padding(16.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // Category badge
-                    Surface(shape = RoundedCornerShape(6.dp), color = Color.White.copy(.15f)) {
-                        Text(
-                            brand?.category ?: "EARN",
-                            Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White
-                        )
-                    }
-
-                    Column {
-                        // Initials badge
+                Column(Modifier.fillMaxWidth()) {
+                    // Top row: badge + title/desc, category on the right
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(.15f)),
+                            Modifier.size(54.dp).clip(RoundedCornerShape(16.dp)).background(Color.White.copy(.18f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 (brand?.displayName ?: networkId).take(2).uppercase(),
-                                fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White
+                                fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.White
                             )
                         }
-                        Spacer(Modifier.height(10.dp))
-                        Text(
-                            brand?.displayName ?: networkId.replaceFirstChar { it.uppercase() },
-                            fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = Color.White
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            brand?.description ?: "Earn coins",
-                            fontSize = 11.sp, color = Color.White.copy(.7f), lineHeight = 15.sp
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        if (hasUrl) {
-                            Surface(shape = RoundedCornerShape(10.dp), color = Color.White.copy(.2f)) {
-                                Row(
-                                    Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("Start Earning", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                                    Spacer(Modifier.width(4.dp))
-                                    Icon(Icons.Default.ArrowForwardIos, null, tint = Color.White, modifier = Modifier.size(10.dp))
-                                }
-                            }
-                        } else {
-                            Text("Coming soon", fontSize = 11.sp, color = Color.White.copy(.5f))
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                brand?.displayName ?: networkId.replaceFirstChar { it.uppercase() },
+                                fontWeight = FontWeight.ExtraBold, fontSize = 19.sp, color = Color.White
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                brand?.description ?: "Earn coins",
+                                fontSize = 12.sp, color = Color.White.copy(.75f), lineHeight = 16.sp
+                            )
                         }
+                        Surface(shape = RoundedCornerShape(6.dp), color = Color.White.copy(.18f)) {
+                            Text(
+                                brand?.category ?: "FEATURED",
+                                Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Full-width CTA
+                    if (hasUrl || hasSdk) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color.White.copy(.22f)
+                        ) {
+                            Row(
+                                Modifier.fillMaxWidth().padding(vertical = 11.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Start Earning", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Spacer(Modifier.width(6.dp))
+                                Icon(Icons.Default.ArrowForwardIos, null, tint = Color.White, modifier = Modifier.size(12.dp))
+                            }
+                        }
+                    } else {
+                        Text("Coming soon", fontSize = 12.sp, color = Color.White.copy(.5f))
                     }
                 }
             }

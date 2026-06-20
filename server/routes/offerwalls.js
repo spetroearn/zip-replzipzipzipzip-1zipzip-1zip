@@ -16,6 +16,32 @@ function verifyHmac(secret, data, signature) {
   }
 }
 
+// ── Resolve a user by uid (string) OR numeric id ─────────────────────────────
+// Offerwall URLs substitute {USER_ID} with the user's `uid` (a 12-char random
+// string). Postbacks echo that value back, so a plain parseInt() would fail and
+// the user would never be credited. This resolver accepts either form.
+// Returns the user row (with numeric id) or null.
+async function resolveUser(identifier) {
+  if (identifier === undefined || identifier === null || identifier === '') return null;
+  const raw = String(identifier).trim();
+  // Try uid match first (covers the random-string case used in offerwall URLs)
+  let result = await pool.query(
+    'SELECT id, name, coins, status FROM users WHERE uid = $1',
+    [raw]
+  );
+  if (result.rows.length > 0) return result.rows[0];
+  // Fall back to numeric primary-key id
+  const numId = parseInt(raw, 10);
+  if (!isNaN(numId) && numId > 0) {
+    result = await pool.query(
+      'SELECT id, name, coins, status FROM users WHERE id = $1',
+      [numId]
+    );
+    if (result.rows.length > 0) return result.rows[0];
+  }
+  return null;
+}
+
 // ── Atomic coin credit helper ─────────────────────────────────────────────────
 // Runs UPDATE users + INSERT transactions inside a single DB transaction.
 // Throws on any DB error so callers can return 500.
@@ -245,17 +271,24 @@ router.all('/taskwall/callback', async (req, res) => {
     return res.status(403).send('Invalid password.');
   }
 
-  const userId = parseInt(p.userid ?? p.user_id, 10);
+  const rawUserId = p.userid ?? p.user_id;
   const coins  = parseInt(p.amount ?? p.user_amount ?? p.coins, 10);
   const offerId = p.offer_id ?? p.offerid ?? '';
 
-  if (isNaN(userId) || isNaN(coins) || coins <= 0) {
+  if (!rawUserId || isNaN(coins) || coins <= 0) {
     console.warn('[TaskWall] Rejected postback — Invalid userid or amount.');
     return res.status(400).send('Invalid userid or amount.');
   }
 
   try {
-    await creditUser(userId, coins, 'taskwall_offer', `TaskWall offer #${offerId}`);
+    // The app passes the user's `uid` (a random string) in the offerwall URL,
+    // so resolve by uid OR numeric id instead of a plain parseInt.
+    const user = await resolveUser(rawUserId);
+    if (!user) {
+      console.warn(`[TaskWall] Rejected postback — Unknown user "${rawUserId}".`);
+      return res.status(404).send('Unknown user.');
+    }
+    await creditUser(user.id, coins, 'taskwall_offer', `TaskWall offer #${offerId}`);
     return res.status(200).send('OK');
   } catch (err) {
     console.error('[TaskWall] DB error:', err.message);
@@ -329,14 +362,26 @@ router.post('/mychips/callback', async (req, res) => {
 // can build the iframe src without hardcoding publisher URLs in client code.
 // Returns ALL networks (enabled + disabled) so the frontend can hide disabled cards.
 // Shape: { config: { [network_id]: { url: string, enabled: boolean } } }
+// ── Public offerwall config (used by the Android app) ────────────────────────
+// Returns url, enabled, and sdk_key for each network.
+// sdk_key is used by the Android app to activate native SDKs (e.g. adjoe Playtime)
+// without requiring an APK update — just enter the key in the admin panel.
 router.get('/config', async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT network_id, url, enabled FROM offerwall_config ORDER BY id'
+      'SELECT network_id, url, enabled, sdk_key, sdk_app_id, color, display_name, description FROM offerwall_config ORDER BY id'
     );
     const config = {};
     for (const row of result.rows) {
-      config[row.network_id] = { url: row.url, enabled: row.enabled };
+      config[row.network_id] = {
+        url: row.url,
+        enabled: row.enabled,
+        sdk_key: row.sdk_key || '',
+        sdk_app_id: row.sdk_app_id || '',
+        color: row.color || '',
+        display_name: row.display_name || '',
+        description: row.description || ''
+      };
     }
     return res.json({ config });
   } catch (err) {

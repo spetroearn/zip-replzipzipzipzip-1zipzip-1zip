@@ -191,7 +191,10 @@ class AppViewModel : ViewModel() {
                         enabled = cfg.enabled,
                         url = cfg.url?.takeIf { it.isNotBlank() },
                         sdkKey = cfg.sdkKey?.takeIf { it.isNotBlank() },
-                        sdkAppId = cfg.sdkAppId?.takeIf { it.isNotBlank() }
+                        sdkAppId = cfg.sdkAppId?.takeIf { it.isNotBlank() },
+                        color = cfg.color?.takeIf { it.isNotBlank() },
+                        displayName = cfg.displayName?.takeIf { it.isNotBlank() },
+                        description = cfg.description?.takeIf { it.isNotBlank() }
                     )
                 }
                 update { copy(offerwalls = walls, offerwallsLoading = false) }

@@ -56,7 +56,10 @@ data class OfferwallNetworkConfig(
     val url: String? = null,
     val enabled: Boolean = true,
     @SerializedName("sdk_key") val sdkKey: String? = null,
-    @SerializedName("sdk_app_id") val sdkAppId: String? = null
+    @SerializedName("sdk_app_id") val sdkAppId: String? = null,
+    val color: String? = null,
+    @SerializedName("display_name") val displayName: String? = null,
+    val description: String? = null
 )
 data class OfferwallConfigMap(val config: Map<String, OfferwallNetworkConfig>? = null)
 
@@ -67,7 +70,10 @@ data class OfferwallItem(
     val enabled: Boolean,
     val url: String?,
     val sdkKey: String? = null,
-    val sdkAppId: String? = null
+    val sdkAppId: String? = null,
+    val color: String? = null,
+    val displayName: String? = null,
+    val description: String? = null
 )
 
 // ── VPN check ────────────────────────────────────────────────────────────────

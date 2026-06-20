@@ -38,14 +38,20 @@ class MainActivity : ComponentActivity() {
         splash.setKeepOnScreenCondition { vm.state.value.loading }
 
         val androidId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: ""
-        val startDest = if (prefs.getBoolean("onboarding_done", false)) "auth" else "onboarding"
+        // When onboarding is done, start on a branded loading screen instead of
+        // "auth" so the login form never flashes before the session is restored.
+        val startDest = if (prefs.getBoolean("onboarding_done", false)) "loading" else "onboarding"
 
         setContent {
             SpetroTheme {
                 val state by vm.state.collectAsState()
                 val nav = rememberNavController()
+                var showNotifPrompt by remember { mutableStateOf(false) }
 
                 NavHost(nav, startDestination = startDest) {
+                    composable("loading") {
+                        LoadingScreen()
+                    }
                     composable("onboarding") {
                         OnboardingScreen {
                             prefs.edit().putBoolean("onboarding_done", true).apply()
@@ -58,7 +64,7 @@ class MainActivity : ComponentActivity() {
                             deviceId = androidId,
                             onAuthed = {
                                 nav.navigate("main") { popUpTo("auth") { inclusive = true } }
-                                maybeRequestNotificationPermission()
+                                if (shouldAskNotificationPermission()) showNotifPrompt = true
                             }
                         )
                     }
@@ -70,13 +76,27 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                if (showNotifPrompt) {
+                    NotificationPermissionDialog(
+                        onAllow = {
+                            markNotificationAsked()
+                            showNotifPrompt = false
+                            launchSystemNotificationPermission()
+                        },
+                        onDismiss = {
+                            markNotificationAsked()
+                            showNotifPrompt = false
+                        }
+                    )
+                }
+
                 LaunchedEffect(state.user, state.loading) {
                     if (!state.loading) {
                         val dest = nav.currentBackStackEntry?.destination?.route
-                        if (state.user != null && (dest == "auth" || dest == "onboarding")) {
+                        if (state.user != null && (dest == "auth" || dest == "onboarding" || dest == "loading")) {
                             nav.navigate("main") { popUpTo(0) { inclusive = true } }
-                        } else if (state.user == null && dest == "main") {
-                            nav.navigate("auth") { popUpTo("main") { inclusive = true } }
+                        } else if (state.user == null && (dest == "main" || dest == "loading")) {
+                            nav.navigate("auth") { popUpTo(0) { inclusive = true } }
                         }
                     }
                 }
@@ -117,18 +137,24 @@ class MainActivity : ComponentActivity() {
         }.start()
     }
 
-    private fun maybeRequestNotificationPermission() {
+    // True only when we should show our in-app rationale: Android 13+, not yet
+    // asked, and not already granted.
+    private fun shouldAskNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
+        if (prefs.getBoolean("notif_asked", false)) return false
+        val granted = ContextCompat.checkSelfPermission(
+            this, Manifest.permission.POST_NOTIFICATIONS
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        return !granted
+    }
+
+    private fun markNotificationAsked() {
+        prefs.edit().putBoolean("notif_asked", true).apply()
+    }
+
+    private fun launchSystemNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val asked = prefs.getBoolean("notif_asked", false)
-            if (!asked) {
-                prefs.edit().putBoolean("notif_asked", true).apply()
-                val granted = ContextCompat.checkSelfPermission(
-                    this, Manifest.permission.POST_NOTIFICATIONS
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                if (!granted) {
-                    notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
+            notifPermLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 }

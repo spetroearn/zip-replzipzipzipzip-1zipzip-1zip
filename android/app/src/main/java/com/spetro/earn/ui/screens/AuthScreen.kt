@@ -38,7 +38,7 @@ private val NAME_REGEX = Regex("^[A-Za-z ]+$")
 @Composable
 fun AuthScreen(vm: AppViewModel, deviceId: String, onAuthed: () -> Unit) {
     val state by vm.state.collectAsState()
-    var tab by remember { mutableStateOf(1) }  // 0=sign in, 1=sign up
+    var mode by remember { mutableStateOf("welcome") }  // welcome | signin | signup
     val ctx = LocalContext.current
     var showTerms by remember { mutableStateOf(false) }
 
@@ -71,56 +71,39 @@ fun AuthScreen(vm: AppViewModel, deviceId: String, onAuthed: () -> Unit) {
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(if (mode == "welcome") 64.dp else 40.dp))
 
             // SE Brand Logo
-            SpetroLogo(size = 76)
+            SpetroLogo(size = if (mode == "welcome") 88 else 72)
             Spacer(Modifier.height(14.dp))
-            Text("Spetro Earn", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = TextPrime)
+            Text("Spetro Earn", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = TextPrime)
             Text("Earn coins • Withdraw real rewards", fontSize = 13.sp, color = TextMuted)
 
-            Spacer(Modifier.height(28.dp))
-
-            // Tab selector
-            Surface(shape = RoundedCornerShape(14.dp), color = BgCard2, modifier = Modifier.fillMaxWidth()) {
-                Row(Modifier.padding(4.dp)) {
-                    listOf("Sign In", "Sign Up").forEachIndexed { i, label ->
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(11.dp))
-                                .background(
-                                    if (tab == i)
-                                        Brush.linearGradient(listOf(Primary, PrimaryDk))
-                                    else Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
-                                )
-                                .clickable { tab = i }
-                                .padding(vertical = 11.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                label, fontWeight = FontWeight.Bold, fontSize = 14.sp,
-                                color = if (tab == i) Color.White else TextMuted
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(if (mode == "welcome") 44.dp else 24.dp))
 
             AnimatedContent(
-                targetState = tab,
+                targetState = mode,
                 transitionSpec = {
-                    fadeIn(tween(200)) + slideInHorizontally { if (targetState > initialState) 60 else -60 } togetherWith
-                    fadeOut(tween(150)) + slideOutHorizontally { if (targetState > initialState) -60 else 60 }
+                    fadeIn(tween(220)) + slideInHorizontally { if (initialState == "welcome") 60 else -60 } togetherWith
+                    fadeOut(tween(160)) + slideOutHorizontally { if (initialState == "welcome") -60 else 60 }
                 },
-                label = "auth_tab"
-            ) { t ->
-                if (t == 0) {
-                    LoginForm(vm, ctx, onAuthed) { showTerms = true }
-                } else {
-                    RegisterForm(vm, deviceId, ctx, onAuthed) { showTerms = true }
+                label = "auth_mode"
+            ) { m ->
+                when (m) {
+                    "welcome" -> WelcomeView(
+                        onSignUp = { mode = "signup" },
+                        onSignIn = { mode = "signin" }
+                    )
+                    "signin" -> Column(Modifier.fillMaxWidth()) {
+                        FormHeader("Sign In", "Welcome back — log in to your account") { mode = "welcome" }
+                        Spacer(Modifier.height(18.dp))
+                        LoginForm(vm, ctx, onAuthed) { showTerms = true }
+                    }
+                    else -> Column(Modifier.fillMaxWidth()) {
+                        FormHeader("Create Account", "Join Spetro Earn and start earning") { mode = "welcome" }
+                        Spacer(Modifier.height(18.dp))
+                        RegisterForm(vm, deviceId, ctx, onAuthed) { showTerms = true }
+                    }
                 }
             }
 
@@ -139,6 +122,51 @@ fun AuthScreen(vm: AppViewModel, deviceId: String, onAuthed: () -> Unit) {
             }
 
             Spacer(Modifier.height(40.dp))
+        }
+    }
+}
+
+// ── Welcome View (choose Sign Up or Sign In) ──────────────────────────────────
+@Composable
+private fun WelcomeView(onSignUp: () -> Unit, onSignIn: () -> Unit) {
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        GradientButton(text = "Sign Up", onClick = onSignUp)
+        Spacer(Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onSignIn,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = BgCard2),
+            border = BorderStroke(1.dp, Border)
+        ) {
+            Text("Sign In", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrime)
+        }
+        Spacer(Modifier.height(20.dp))
+        Text(
+            "Create a free account to start earning,\nor sign in if you already have one.",
+            fontSize = 12.sp, color = TextDim, textAlign = TextAlign.Center, lineHeight = 18.sp
+        )
+    }
+}
+
+// ── Form header with back button ──────────────────────────────────────────────
+@Composable
+private fun FormHeader(title: String, subtitle: String, onBack: () -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = BgCard2,
+            border = BorderStroke(1.dp, Border),
+            modifier = Modifier.size(42.dp).clickable(onClick = onBack)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.ArrowBack, "Back", tint = TextPrime, modifier = Modifier.size(20.dp))
+            }
+        }
+        Spacer(Modifier.width(14.dp))
+        Column {
+            Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrime)
+            Text(subtitle, fontSize = 12.sp, color = TextMuted)
         }
     }
 }
