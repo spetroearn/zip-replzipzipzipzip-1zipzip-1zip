@@ -87,6 +87,13 @@ const SCHEMA_SQL = `
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
   );
 
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS display_name VARCHAR(100);
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '';
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS color VARCHAR(20) DEFAULT '#3b82f6';
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS logo_url TEXT DEFAULT '';
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS sdk_key TEXT DEFAULT '';
+  ALTER TABLE offerwall_config ADD COLUMN IF NOT EXISTS sdk_app_id TEXT DEFAULT '';
+
   CREATE TABLE IF NOT EXISTS direct_offers (
     id SERIAL PRIMARY KEY,
     title VARCHAR(200) UNIQUE NOT NULL,
@@ -106,6 +113,8 @@ const OFFERWALL_NETWORKS = [
   { network_id: 'ovnix',    name: 'Ovnix' },
   { network_id: 'adtowall', name: 'AdToWall' },
   { network_id: 'taskwall', name: 'TaskWall', url: 'https://wall.taskwall.io/?app_id=10889467703bb0ea255abfe901662a50&userid={USER_ID}' },
+  { network_id: 'torox',    name: 'Torox' },
+  { network_id: 'mychips',  name: 'MyChips' },
 ];
 
 async function autoInit() {
