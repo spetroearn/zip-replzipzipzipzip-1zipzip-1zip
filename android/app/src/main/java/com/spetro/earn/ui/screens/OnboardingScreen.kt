@@ -16,10 +16,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spetro.earn.R
 import com.spetro.earn.ui.theme.*
 import kotlinx.coroutines.launch
 
@@ -154,23 +157,14 @@ private fun OnboardPageContent(page: OnboardPage, gradient: Brush, pageIndex: In
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Page 0 shows the SE brand logo; other pages show an icon box
+        // Page 0 shows the real app logo; other pages show an icon box
         if (pageIndex == 0) {
-            // SE Brand logo — no lightning bolt
-            Box(
-                Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(gradient),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "SE",
-                    fontSize = 38.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-            }
+            androidx.compose.foundation.Image(
+                painter = painterResource(R.drawable.app_logo),
+                contentDescription = "Spetro Earn",
+                modifier = Modifier.size(100.dp).clip(RoundedCornerShape(28.dp)),
+                contentScale = ContentScale.Fit
+            )
         } else {
             Box(
                 Modifier

@@ -19,10 +19,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spetro.earn.R
 import com.spetro.earn.network.Transaction
 import com.spetro.earn.ui.theme.*
 import com.spetro.earn.viewmodel.AppViewModel
@@ -61,7 +64,12 @@ fun HomeScreen(vm: AppViewModel, onNavigate: (String) -> Unit = {}) {
                     Text("Welcome back,", fontSize = 12.sp, color = TextMuted)
                     Text(user.name.split(" ").first(), fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextPrime)
                 }
-                SpetroLogo(size = 40)
+                androidx.compose.foundation.Image(
+                    painter = painterResource(R.drawable.app_logo),
+                    contentDescription = "Spetro Earn",
+                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Fit
+                )
             }
 
             Spacer(Modifier.height(18.dp))

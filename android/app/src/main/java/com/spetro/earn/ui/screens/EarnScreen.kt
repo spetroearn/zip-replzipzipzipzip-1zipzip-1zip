@@ -153,27 +153,133 @@ fun EarnScreen(vm: AppViewModel) {
                 Surface(Modifier.fillMaxWidth().height(80.dp).padding(bottom = 10.dp), shape = RoundedCornerShape(16.dp), color = BgCard, border = BorderStroke(1.dp, Border)) {}
             }
         } else {
-            // Show hardcoded brand walls enriched with server URL config
             val serverMap = state.offerwalls.associateBy { it.id.lowercase() }
-            val allWalls = listOf("adjoe", "revu", "offery", "ovnix", "adtowall", "taskwall", "torox", "mychips")
-
             val userUid = state.user?.uid ?: state.user?.id?.toString() ?: ""
-            allWalls.forEachIndexed { idx, networkId ->
+
+            // ── Featured top row: adjoe + taskwall as big squares ─────────
+            val featuredIds = listOf("adjoe", "taskwall")
+            val regularIds  = listOf("revu", "offery", "ovnix", "adtowall", "torox", "mychips")
+
+            val featuredEnabled = featuredIds.filter { id ->
+                serverMap[id]?.enabled != false
+            }
+            if (featuredEnabled.isNotEmpty()) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    featuredEnabled.forEachIndexed { idx, networkId ->
+                        val serverEntry = serverMap[networkId]
+                        val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
+                        val brand = brandMap[networkId]
+                        FeaturedWallCard(
+                            networkId = networkId, url = url, brand = brand, ctx = ctx,
+                            modifier = Modifier.weight(1f), index = idx
+                        )
+                    }
+                    // If only one featured item, add spacer for balance
+                    if (featuredEnabled.size == 1) Spacer(Modifier.weight(1f))
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+
+            // ── Regular list ───────────────────────────────────────────────
+            regularIds.forEachIndexed { idx, networkId ->
                 val serverEntry = serverMap[networkId]
                 val enabled = serverEntry?.enabled != false
-                // Substitute {USER_ID} placeholder with actual user UID
-                val rawUrl = serverEntry?.url
-                val url = rawUrl?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
+                val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
                 val brand = brandMap[networkId]
-
                 if (enabled) {
-                    WallCard(networkId = networkId, url = url, brand = brand, ctx = ctx, index = idx)
+                    WallCard(networkId = networkId, url = url, brand = brand, ctx = ctx, index = idx + 2)
                     Spacer(Modifier.height(10.dp))
                 }
             }
         }
 
         Spacer(Modifier.height(88.dp))
+    }
+}
+
+@Composable
+private fun FeaturedWallCard(networkId: String, url: String?, brand: WallBrand?, ctx: Context, modifier: Modifier = Modifier, index: Int = 0) {
+    val accent = brand?.accent ?: Color(0xFF3b82f6)
+    val hasUrl = !url.isNullOrBlank()
+
+    var visible by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(index * 80L)
+        visible = true
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.92f),
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(0.85f)
+                .clickable(enabled = hasUrl) { if (hasUrl) openUrl(ctx, url!!) },
+            shape = RoundedCornerShape(22.dp),
+            color = BgCard,
+            border = BorderStroke(1.5.dp, if (hasUrl) accent.copy(.35f) else Border)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(brand?.gradient ?: Brush.linearGradient(listOf(BgCard2, BgCard2)))
+            ) {
+                Column(
+                    Modifier.fillMaxSize().padding(16.dp),
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Category badge
+                    Surface(shape = RoundedCornerShape(6.dp), color = Color.White.copy(.15f)) {
+                        Text(
+                            brand?.category ?: "EARN",
+                            Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White
+                        )
+                    }
+
+                    Column {
+                        // Initials badge
+                        Box(
+                            Modifier.size(48.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                (brand?.displayName ?: networkId).take(2).uppercase(),
+                                fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White
+                            )
+                        }
+                        Spacer(Modifier.height(10.dp))
+                        Text(
+                            brand?.displayName ?: networkId.replaceFirstChar { it.uppercase() },
+                            fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = Color.White
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            brand?.description ?: "Earn coins",
+                            fontSize = 11.sp, color = Color.White.copy(.7f), lineHeight = 15.sp
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        if (hasUrl) {
+                            Surface(shape = RoundedCornerShape(10.dp), color = Color.White.copy(.2f)) {
+                                Row(
+                                    Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Start Earning", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Spacer(Modifier.width(4.dp))
+                                    Icon(Icons.Default.ArrowForwardIos, null, tint = Color.White, modifier = Modifier.size(10.dp))
+                                }
+                            }
+                        } else {
+                            Text("Coming soon", fontSize = 11.sp, color = Color.White.copy(.5f))
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
