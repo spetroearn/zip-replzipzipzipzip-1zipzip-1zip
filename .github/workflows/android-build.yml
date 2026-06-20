@@ -1,9 +1,5 @@
 name: Build Android APK
 
-# Builds the Spetro Earn Android APK in the cloud and uploads it as a
-# downloadable artifact. Run it manually from the GitHub "Actions" tab
-# (Build Android APK → Run workflow), or it runs automatically on push to main.
-
 on:
   workflow_dispatch:
   push:
@@ -17,6 +13,8 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,11 +46,33 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Get version name
+        id: version
+        run: |
+          VERSION=$(grep versionName android/app/build.gradle | grep -o '"[^"]*"' | tr -d '"')
+          echo "name=v$VERSION" >> $GITHUB_OUTPUT
+          echo "apk_name=SpetroEarn-v$VERSION.apk" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.name }}
+          name: Spetro Earn ${{ steps.version.outputs.name }}
+          body: "Android APK build — ${{ steps.version.outputs.name }}"
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename artifact for upload
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk SpetroEarn-latest.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: spetro-earn-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: ${{ steps.version.outputs.apk_name }}
+          path: SpetroEarn-latest.apk
           if-no-files-found: error

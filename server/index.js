@@ -34,13 +34,13 @@ try {
 
 // ── Auto-download APK from GitHub Releases if missing ─────────────────────────
 const APK_PATH = path.join(__dirname, 'public', 'SpetroEarn-latest.apk');
-const APK_URL  = 'https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.7/SpetroEarn-v2.1.7.apk';
+const APK_URL  = 'https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk';
 const fs    = require('fs');
 const https = require('https');
 const http  = require('http');
 
 const APK_VER_PATH = path.join(__dirname, 'public', '.apk-version');
-const APK_EXPECTED = 'v2.1.7';
+const APK_EXPECTED = 'v2.1.8';
 
 function downloadApk() {
   const current = fs.existsSync(APK_VER_PATH) ? fs.readFileSync(APK_VER_PATH, 'utf8').trim() : '';
