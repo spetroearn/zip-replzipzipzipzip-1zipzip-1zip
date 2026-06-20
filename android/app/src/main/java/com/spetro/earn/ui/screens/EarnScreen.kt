@@ -62,10 +62,10 @@ private val brandMap = mapOf(
         Color(0xFF06b6d4),
         Brush.linearGradient(listOf(Color(0xFF164e63), Color(0xFF0891b2)))
     ),
-    "taskwall" to WallBrand(
-        "TaskWall", "Complete tasks and get rewarded", "TASKS",
-        Color(0xFFef4444),
-        Brush.linearGradient(listOf(Color(0xFF7f1d1d), Color(0xFFdc2626)))
+    "tabjoy" to WallBrand(
+        "TabJoy", "Complete web tasks and get rewarded", "WEB",
+        Color(0xFF2B6CB0),
+        Brush.linearGradient(listOf(Color(0xFF1a3a5c), Color(0xFF2563eb)))
     ),
     "torox" to WallBrand(
         "Torox", "Premium rewarded offer wall", "PREMIUM",
@@ -158,9 +158,9 @@ fun EarnScreen(vm: AppViewModel) {
             val serverMap = state.offerwalls.associateBy { it.id.lowercase() }
             val userUid = state.user?.uid ?: state.user?.id?.toString() ?: ""
 
-            // ── Featured top row: adjoe + taskwall as big squares ─────────
-            val featuredIds = listOf("adjoe", "taskwall")
-            val regularIds  = listOf("revu", "offery", "ovnix", "adtowall", "torox", "mychips")
+            // ── Featured top row: adjoe only ──────────────────────────────
+            val featuredIds = listOf("adjoe")
+            val regularIds  = listOf("revu", "offery", "ovnix", "adtowall", "tabjoy", "torox", "mychips")
 
             val featuredEnabled = featuredIds.filter { id ->
                 serverMap[id]?.enabled != false
