@@ -34,13 +34,13 @@ try {
 
 // ── Auto-download APK from GitHub Releases if missing ─────────────────────────
 const APK_PATH = path.join(__dirname, 'public', 'SpetroEarn-latest.apk');
-const APK_URL  = 'https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk';
+const APK_URL  = 'https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.9/SpetroEarn-v2.1.9.apk';
 const fs    = require('fs');
 const https = require('https');
 const http  = require('http');
 
 const APK_VER_PATH = path.join(__dirname, 'public', '.apk-version');
-const APK_EXPECTED = 'v2.1.8';
+const APK_EXPECTED = 'v2.1.9';
 
 function downloadApk() {
   const current = fs.existsSync(APK_VER_PATH) ? fs.readFileSync(APK_VER_PATH, 'utf8').trim() : '';
@@ -297,7 +297,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Free APK
     </a>
-    <p class="hero-note">Android 7.0+ &nbsp;·&nbsp; No Google Play required &nbsp;·&nbsp; Latest v2.1.8</p>
+    <p class="hero-note">Android 7.0+ &nbsp;·&nbsp; No Google Play required &nbsp;·&nbsp; Latest v2.1.9</p>
     <div class="hero-badges">
       <div class="badge"><div class="badge-dot"></div>Tamper-proof server balances</div>
       <div class="badge"><div class="badge-dot"></div>8+ offerwall partners</div>
@@ -461,7 +461,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Spetro Earn — Free
     </a>
-    <p class="hero-note" style="margin-top:14px">Android 7.0+ &nbsp;·&nbsp; v2.1.8 &nbsp;·&nbsp; 19 MB</p>
+    <p class="hero-note" style="margin-top:14px">Android 7.0+ &nbsp;·&nbsp; v2.1.9 &nbsp;·&nbsp; 19 MB</p>
   </div>
 </section>
 
