@@ -5,9 +5,9 @@ import { api } from '../api';
 const WALLS = [
   {
     id: 'adjoe',
-    name: 'adjoe',
-    subtitle: 'Playtime',
-    description: 'Play games, level up, and earn coins automatically per minute.',
+    name: 'Playtime',
+    subtitle: 'adjoe · Play & Earn',
+    description: 'Earn coins automatically while you play games — no tasks, no surveys. Just level up and get paid per minute of playtime.',
     color: '#8b5cf6',
     bg: 'linear-gradient(145deg, #1a0e30, #221244)',
     borderColor: 'rgba(139,92,246,0.3)',
@@ -15,6 +15,19 @@ const WALLS = [
     apkOnly: true,
     logo: '/logos/adjoe.png',
     url: null
+  },
+  {
+    id: 'taskwall',
+    name: 'TaskWall',
+    subtitle: 'Tasks & Offers · NEW',
+    description: 'Complete real tasks, app installs, and premium offers for instant coin rewards.',
+    color: '#3b82f6',
+    bg: 'linear-gradient(145deg, #07101e, #0b1e38)',
+    borderColor: 'rgba(59,130,246,0.45)',
+    isNew: true,
+    featured: false,
+    logo: '/logos/taskwall.png',
+    url: 'https://wall.taskwall.io/?app_id=10889467703bb0ea255abfe901662a50&userid={USER_ID}'
   },
   {
     id: 'revu',
@@ -34,7 +47,6 @@ const WALLS = [
     name: 'Offery',
     subtitle: 'App Installs',
     description: 'Explore new apps, register accounts, and unlock fast rewards.',
-    // Cyan/teal — matches Offery's own platform brand color
     color: '#06B6D4',
     bg: 'linear-gradient(145deg, #001c21, #002d35)',
     borderColor: 'rgba(6,182,212,0.28)',
@@ -67,18 +79,6 @@ const WALLS = [
     logo: '/logos/adtowall.png',
     minLevel: 3,
     url: 'https://adtowall.com/wall?pub=YOUR_PUB_ID&uid={USER_ID}'
-  },
-  {
-    id: 'taskwall',
-    name: 'TaskWall',
-    subtitle: 'Task Offers',
-    description: 'Complete guided tasks, registrations, and challenges for premium payouts.',
-    color: '#2B6CB0',
-    bg: 'linear-gradient(145deg, #07101e, #0b1e38)',
-    borderColor: 'rgba(43,108,176,0.32)',
-    featured: false,
-    logo: '/logos/taskwall.png',
-    url: 'https://wall.taskwall.io/?app_id=10889467703bb0ea255abfe901662a50&userid={USER_ID}'
   },
   {
     id: 'torox',
