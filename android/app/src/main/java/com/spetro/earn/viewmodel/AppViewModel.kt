@@ -185,7 +185,14 @@ class AppViewModel : ViewModel() {
             if (r.isSuccessful) {
                 val configMap = r.body()?.config ?: emptyMap()
                 val walls = configMap.map { (id, cfg) ->
-                    OfferwallItem(id = id, name = id, enabled = cfg.enabled, url = cfg.url?.takeIf { it.isNotBlank() })
+                    OfferwallItem(
+                        id = id,
+                        name = id,
+                        enabled = cfg.enabled,
+                        url = cfg.url?.takeIf { it.isNotBlank() },
+                        sdkKey = cfg.sdkKey?.takeIf { it.isNotBlank() },
+                        sdkAppId = cfg.sdkAppId?.takeIf { it.isNotBlank() }
+                    )
                 }
                 update { copy(offerwalls = walls, offerwallsLoading = false) }
             } else {

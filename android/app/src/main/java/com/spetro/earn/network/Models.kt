@@ -51,10 +51,12 @@ data class Transaction(
 )
 data class HistoryResponse(val transactions: List<Transaction>)
 
-// ── Offerwalls — matches server shape: { config: { adjoe: { url, enabled } } } ─
+// ── Offerwalls — matches server shape: { config: { adjoe: { url, enabled, sdk_key } } } ─
 data class OfferwallNetworkConfig(
     val url: String? = null,
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    @SerializedName("sdk_key") val sdkKey: String? = null,
+    @SerializedName("sdk_app_id") val sdkAppId: String? = null
 )
 data class OfferwallConfigMap(val config: Map<String, OfferwallNetworkConfig>? = null)
 
@@ -63,7 +65,9 @@ data class OfferwallItem(
     val id: String,
     val name: String,
     val enabled: Boolean,
-    val url: String?
+    val url: String?,
+    val sdkKey: String? = null,
+    val sdkAppId: String? = null
 )
 
 // ── VPN check ────────────────────────────────────────────────────────────────

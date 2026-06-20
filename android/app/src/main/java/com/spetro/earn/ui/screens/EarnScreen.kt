@@ -1,9 +1,11 @@
 package com.spetro.earn.ui.screens
 
+import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import com.spetro.earn.sdk.AdjoeManager
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -169,9 +171,10 @@ fun EarnScreen(vm: AppViewModel) {
                         val serverEntry = serverMap[networkId]
                         val url = serverEntry?.url?.takeIf { it.isNotBlank() }?.replace("{USER_ID}", userUid)
                         val brand = brandMap[networkId]
+                        val sdkKey = serverEntry?.sdkKey
                         FeaturedWallCard(
                             networkId = networkId, url = url, brand = brand, ctx = ctx,
-                            modifier = Modifier.weight(1f), index = idx
+                            modifier = Modifier.weight(1f), index = idx, sdkKey = sdkKey
                         )
                     }
                     // If only one featured item, add spacer for balance
@@ -198,9 +201,19 @@ fun EarnScreen(vm: AppViewModel) {
 }
 
 @Composable
-private fun FeaturedWallCard(networkId: String, url: String?, brand: WallBrand?, ctx: Context, modifier: Modifier = Modifier, index: Int = 0) {
+private fun FeaturedWallCard(
+    networkId: String,
+    url: String?,
+    brand: WallBrand?,
+    ctx: Context,
+    modifier: Modifier = Modifier,
+    index: Int = 0,
+    sdkKey: String? = null
+) {
     val accent = brand?.accent ?: Color(0xFF3b82f6)
+    val hasSdk = !sdkKey.isNullOrBlank() && AdjoeManager.isAvailable()
     val hasUrl = !url.isNullOrBlank()
+    val isClickable = hasSdk || hasUrl
 
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -217,7 +230,13 @@ private fun FeaturedWallCard(networkId: String, url: String?, brand: WallBrand?,
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(0.85f)
-                .clickable(enabled = hasUrl) { if (hasUrl) openUrl(ctx, url!!) },
+                .clickable(enabled = isClickable) {
+                    // Try native SDK first (adjoe Playtime), fall back to web URL
+                    val sdkLaunched = if (hasSdk && ctx is Activity) {
+                        AdjoeManager.launch(ctx, sdkKey!!)
+                    } else false
+                    if (!sdkLaunched && hasUrl) openUrl(ctx, url!!)
+                },
             shape = RoundedCornerShape(22.dp),
             color = BgCard,
             border = BorderStroke(1.5.dp, if (hasUrl) accent.copy(.35f) else Border)
