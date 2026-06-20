@@ -80,7 +80,7 @@ function downloadApk() {
             if (err) console.error('[APK] Rename error:', err.message);
             else {
               fs.writeFileSync(APK_VER_PATH, APK_EXPECTED);
-              console.log('[APK] Download complete — v2.1.7');
+              console.log('[APK] Download complete — ' + APK_EXPECTED);
             }
           });
         });
@@ -292,7 +292,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Free APK
     </a>
-    <p class="hero-note">Android 7.0+ &nbsp;·&nbsp; No Google Play required &nbsp;·&nbsp; Latest v2.1.7</p>
+    <p class="hero-note">Android 7.0+ &nbsp;·&nbsp; No Google Play required &nbsp;·&nbsp; Latest v2.1.8</p>
     <div class="hero-badges">
       <div class="badge"><div class="badge-dot"></div>Tamper-proof server balances</div>
       <div class="badge"><div class="badge-dot"></div>8+ offerwall partners</div>
@@ -456,7 +456,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Spetro Earn — Free
     </a>
-    <p class="hero-note" style="margin-top:14px">Android 7.0+ &nbsp;·&nbsp; v2.1.7 &nbsp;·&nbsp; 19 MB</p>
+    <p class="hero-note" style="margin-top:14px">Android 7.0+ &nbsp;·&nbsp; v2.1.8 &nbsp;·&nbsp; 19 MB</p>
   </div>
 </section>
 
