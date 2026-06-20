@@ -751,7 +751,7 @@ function FeaturedWallCard({ wall, user }) {
               Soon
             </p>
             <p style={{ color: 'var(--text-muted)', fontSize: 12, lineHeight: 1.5 }}>
-              adjoe Playtime rewards will be available soon.
+              Playtime rewards will be available soon.
             </p>
           </div>
         </div>

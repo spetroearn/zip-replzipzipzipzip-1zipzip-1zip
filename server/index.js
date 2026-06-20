@@ -45,7 +45,7 @@ const APK_EXPECTED = 'v2.1.8';
 function downloadApk() {
   const current = fs.existsSync(APK_VER_PATH) ? fs.readFileSync(APK_VER_PATH, 'utf8').trim() : '';
   if (fs.existsSync(APK_PATH) && current === APK_EXPECTED) {
-    console.log('[APK] v2.1.7 already up-to-date, skipping download.');
+    console.log('[APK] ' + APK_EXPECTED + ' already up-to-date, skipping download.');
     return;
   }
   if (fs.existsSync(APK_PATH)) {
@@ -161,14 +161,9 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
   }]);
 });
 
-// APK download — both routes point to the same file
+// APK download — redirect directly to GitHub Release (always latest)
 function serveApk(req, res) {
-  if (!fs.existsSync(APK_PATH)) {
-    return res.status(503).send('APK is being prepared, please try again in 30 seconds.');
-  }
-  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
-  res.setHeader('Content-Disposition', 'attachment; filename="SpetroEarn-latest.apk"');
-  res.sendFile(APK_PATH);
+  res.redirect(302, APK_URL);
 }
 app.get('/SpetroEarn-latest.apk', serveApk);
 app.get('/api/download-apk', serveApk);
