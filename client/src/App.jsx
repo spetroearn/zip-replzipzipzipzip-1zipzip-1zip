@@ -15,6 +15,15 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import { api } from './api';
 import { SpetroMark, XIcon } from './components/Icons';
 
+const CACHE_KEY = 'spetro_user_cache';
+
+function getCachedUser() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; }
+}
+function setCachedUser(u) {
+  try { if (u) localStorage.setItem(CACHE_KEY, JSON.stringify(u)); else localStorage.removeItem(CACHE_KEY); } catch {}
+}
+
 function AppInner() {
   const isAdminRoute = window.location.pathname.startsWith('/admin');
 
@@ -22,8 +31,10 @@ function AppInner() {
   const urlParams = new URLSearchParams(window.location.search);
   const resetToken = urlParams.get('reset_token');
 
-  const [authState, setAuthState] = useState('loading');
+  const cached = !isAdminRoute ? getCachedUser() : null;
+  const [authState, setAuthState] = useState('guest');
   const [user, setUser] = useState(null);
+  const [sessionChecked, setSessionChecked] = useState(!cached);
   const [authModal, setAuthModal] = useState(null); // null | 'login' | 'register'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [prevTab, setPrevTab] = useState('dashboard');
@@ -38,8 +49,17 @@ function AppInner() {
         .catch(() => setAdminState('login'));
     } else {
       api.auth.me()
-        .then((d) => { setUser(d.user); setAuthState('app'); })
-        .catch(() => setAuthState('guest'));
+        .then((d) => {
+          setUser(d.user);
+          setAuthState('app');
+          setCachedUser(d.user);
+        })
+        .catch(() => {
+          setCachedUser(null);
+          setUser(null);
+          setAuthState('guest');
+        })
+        .finally(() => setSessionChecked(true));
     }
   }, [isAdminRoute]);
 
@@ -63,12 +83,13 @@ function AppInner() {
     return <AdminDashboard admin={admin} onLogout={() => { setAdmin(null); setAdminState('login'); }} />;
   }
 
-  if (authState === 'loading') return <LoadingScreen />;
+  if (!sessionChecked) return <LoadingScreen />;
 
   const goToLogin = () => setAuthModal('login');
   const goToRegister = () => setAuthModal('register');
   const closeAuthModal = () => setAuthModal(null);
   const handleAuthSuccess = (u) => {
+    setCachedUser(u);
     setUser(u);
     setAuthState('app');
     setActiveTab('dashboard');
@@ -111,7 +132,7 @@ function AppInner() {
         <Profile
           user={user}
           guest={isGuest}
-          onLogout={() => { setUser(null); setAuthState('guest'); setActiveTab('dashboard'); }}
+          onLogout={() => { setCachedUser(null); setUser(null); setAuthState('guest'); setActiveTab('dashboard'); }}
           onBack={handleBack}
           onGoLogin={goToLogin}
           onGoRegister={goToRegister}

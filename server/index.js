@@ -39,9 +39,21 @@ const fs    = require('fs');
 const https = require('https');
 const http  = require('http');
 
+const APK_VER_PATH = path.join(__dirname, 'public', '.apk-version');
+const APK_EXPECTED = 'v2.1.7';
+
 function downloadApk() {
-  if (fs.existsSync(APK_PATH)) { console.log('[APK] File already exists, skipping download.'); return; }
-  console.log('[APK] Downloading SpetroEarn-latest.apk…');
+  const current = fs.existsSync(APK_VER_PATH) ? fs.readFileSync(APK_VER_PATH, 'utf8').trim() : '';
+  if (fs.existsSync(APK_PATH) && current === APK_EXPECTED) {
+    console.log('[APK] v2.1.7 already up-to-date, skipping download.');
+    return;
+  }
+  if (fs.existsSync(APK_PATH)) {
+    try { fs.unlinkSync(APK_PATH); } catch (_) {}
+    console.log('[APK] Version mismatch (' + (current||'unknown') + ' → ' + APK_EXPECTED + '), re-downloading…');
+  } else {
+    console.log('[APK] Downloading SpetroEarn-latest.apk…');
+  }
 
   function fetchTo(url, dest, redirects) {
     if (redirects > 10) { console.error('[APK] Too many redirects'); return; }
@@ -66,7 +78,10 @@ function downloadApk() {
         file.close(() => {
           fs.rename(tmpPath, dest, (err) => {
             if (err) console.error('[APK] Rename error:', err.message);
-            else console.log('[APK] Download complete —', dest);
+            else {
+              fs.writeFileSync(APK_VER_PATH, APK_EXPECTED);
+              console.log('[APK] Download complete — v2.1.7');
+            }
           });
         });
       });

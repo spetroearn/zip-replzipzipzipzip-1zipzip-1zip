@@ -109,6 +109,8 @@ function SignInModal({ method, onClose, onGoLogin, onGoRegister }) {
 
 function MethodCard({ m, selected, disabled, onClick, coins }) {
   const active = selected;
+  const [imgErr, setImgErr] = React.useState(false);
+  const abbr = m.key === 'binance_usdt' ? 'BNB' : m.key === 'google_play' ? 'GP' : m.key.slice(0, 3).toUpperCase();
   return (
     <button
       onClick={onClick}
@@ -142,7 +144,10 @@ function MethodCard({ m, selected, disabled, onClick, coins }) {
         </div>
       )}
       <div style={{ width:48,height:36,borderRadius:10,background:m.logoBg,border:'1px solid rgba(255,255,255,0.07)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-        <img src={m.logo} alt={m.label} style={{ width:'80%',height:'80%',objectFit:'contain' }} onError={e => { e.target.style.display='none'; }} />
+        {!imgErr
+          ? <img src={m.logo} alt={m.label} style={{ width:'80%',height:'80%',objectFit:'contain' }} onError={() => setImgErr(true)} />
+          : <span style={{ fontWeight:900,fontSize:11,color:m.accent,letterSpacing:'0.04em' }}>{abbr}</span>
+        }
       </div>
       <div>
         <p style={{ fontWeight:800,fontSize:13,color: active ? m.accent : 'var(--text)',transition:'color 0.2s',lineHeight:1.2 }}>{m.label}</p>
