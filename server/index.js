@@ -163,7 +163,12 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
 
 // APK download — redirect directly to GitHub Release (always latest)
 function serveApk(req, res) {
-  res.redirect(302, APK_URL);
+  if (!fs.existsSync(APK_PATH)) {
+    return res.status(503).send('APK is being prepared, please try again in a moment.');
+  }
+  res.setHeader('Content-Disposition', 'attachment; filename="SpetroEarn-latest.apk"');
+  res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+  res.sendFile(APK_PATH);
 }
 app.get('/SpetroEarn-latest.apk', serveApk);
 app.get('/api/download-apk', serveApk);
@@ -278,7 +283,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
       <img src="/logo-transparent.png" alt="SE">
       Spetro Earn
     </div>
-    <a class="nav-dl" href="https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk">Download APK</a>
+    <a class="nav-dl" href="/api/download-apk">Download APK</a>
   </div>
 </nav>
 
@@ -288,7 +293,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
     <div class="hero-logo"><img src="/logo-transparent.png" alt="Spetro Earn"></div>
     <h1>Earn Real Money<br>Every Single Day</h1>
     <p class="hero-sub">Complete simple offers, daily check-ins, and tasks to earn Spetro Coins. Withdraw instantly via Visa, Binance, Google Play, and more. 100% free — no hidden fees.</p>
-    <a class="dl-btn" href="https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk">
+    <a class="dl-btn" href="/api/download-apk">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Free APK
     </a>
@@ -452,7 +457,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
   <div class="container">
     <h2 class="section-title">Ready to Start Earning?</h2>
     <p class="section-sub" style="margin:0 auto 36px">Download the app right now and collect your welcome bonus the moment you register.</p>
-    <a class="dl-btn" href="https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk">
+    <a class="dl-btn" href="/api/download-apk">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download Spetro Earn — Free
     </a>
@@ -470,7 +475,7 @@ const DOWNLOAD_PAGE = `<!DOCTYPE html>
     <a href="/admin">Admin Panel</a>
     <a href="https://www.youtube.com/@SpetroEarn" target="_blank">YouTube</a>
     <a href="https://www.trustpilot.com" target="_blank">Trustpilot</a>
-    <a href="https://github.com/spetroearn/zip-replzipzipzipzip-1zipzip-1zip/releases/download/v2.1.8/SpetroEarn-v2.1.8.apk">Download APK</a>
+    <a href="/api/download-apk">Download APK</a>
   </div>
   <p>&copy; 2025 Spetro Earn. All rights reserved. &nbsp;·&nbsp; Secure server-side reward platform.</p>
 </footer>
